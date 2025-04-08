@@ -54,7 +54,7 @@ export function NavUser({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-xl bg-black border-[hsl(0,0%,8%)] hover:bg-white "
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-xl  hover:bg-gray-100 "
             side={isMobile || isNavbar ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -66,7 +66,6 @@ export function NavUser({
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                       <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                       </Avatar>
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">{user.name}</span>
@@ -82,7 +81,7 @@ export function NavUser({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex w-full hover:text-black items-center gap-2"
+                className="flex w-full bg-white hover:bg-gray-100 items-center gap-2"
               >
                 <LogOut className="size-4 " />
                 Log out
