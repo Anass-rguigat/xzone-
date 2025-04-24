@@ -3,11 +3,10 @@ import { useState, useEffect } from 'react';
 import { Layout } from '@/Layouts/layout';
 import toast from 'react-hot-toast';
 import { PlusIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
-
+import { can } from '@/helpers';
 interface Component {
     id: number;
     name: string;
-    price: number;
 }
 
 interface StockLevel {
@@ -33,7 +32,9 @@ export default function Index({ stockLevels, pagination }: Props) {
     const [sortConfig, setSortConfig] = useState<{ key: keyof StockLevel; direction: 'asc' | 'desc' } | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
-    const { flash } = usePage().props;
+    const { flash, auth } = usePage().props;
+    const user = auth.user;
+
 
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);
@@ -88,48 +89,47 @@ export default function Index({ stockLevels, pagination }: Props) {
 
     return (
         <Layout>
-            <div className="p-6 min-h-screen bg-white rounded-2xl">
+            <div className="p-10 min-h-screen bg-white rounded-xl w-full">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
-                        <h1 className="text-2xl font-bold text-gray-900">
+                    <div className="flex flex-col md:flex-row justify-between mb-4 gap-2">
+                        <h1 className="text-lg font-semibold text-gray-900">
                             Niveaux de Stock
                         </h1>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="relative flex-1 max-w-xs">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <div className="relative w-full sm:w-auto flex-1">
                                 <input
                                     type="text"
-                                    className="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-xl text-gray-700 
-                                               focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30
-                                               placeholder-gray-400 transition-all bg-white"
+                                    className="w-full pl-3 pr-9 py-1.5 border border-gray-300 rounded-lg text-sm 
+                                             focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30
+                                             placeholder-gray-400 bg-white"
                                     placeholder="Rechercher..."
                                     value={searchTerm}
                                     onChange={handleSearchChange}
                                 />
-                                <SearchIcon className="h-5 w-5 absolute right-3 top-3 text-gray-400" />
+                                <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="min-w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         {[
                                             { key: 'component_type', label: 'Type', sortable: true },
                                             { key: 'component', label: 'Composant', sortable: true },
                                             { key: 'quantity', label: 'Quantité', sortable: true },
-                                            { key: 'price', label: 'Prix', sortable: false },
                                         ].map((header) => (
                                             <th
                                                 key={header.key}
-                                                className="px-6 py-4 text-left text-sm font-semibold text-gray-700"
+                                                className="px-4 py-2 text-left text-xs font-semibold text-gray-700"
                                                 onClick={() => header.sortable && handleSort(header.key as keyof StockLevel)}
                                             >
                                                 <div className="flex items-center group">
                                                     {header.label}
                                                     {header.sortable && (
-                                                        <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <span className="ml-1 opacity-50 group-hover:opacity-100 transition-opacity">
                                                             {getSortIcon(header.key as keyof StockLevel)}
                                                         </span>
                                                     )}
@@ -141,17 +141,14 @@ export default function Index({ stockLevels, pagination }: Props) {
                                 <tbody className="divide-y divide-gray-200">
                                     {currentItems.map((stockLevel) => (
                                         <tr key={stockLevel.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                                            <td className="px-4 py-2 text-sm text-gray-900">
                                                 {stockLevel.component_type.split('\\').pop()}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                            <td className="px-4 py-2 text-sm text-gray-600">
                                                 {stockLevel.component?.name || 'N/A'}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-blue-600 font-medium">
+                                            <td className="px-4 py-2 text-sm text-blue-600">
                                                 {stockLevel.quantity}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-700">
-                                                {stockLevel.component?.price ? `${stockLevel.component.price} DH` : '-'}
                                             </td>
                                         </tr>
                                     ))}
@@ -160,35 +157,32 @@ export default function Index({ stockLevels, pagination }: Props) {
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t border-gray-200">
-                            <div className="mb-4 sm:mb-0 text-sm text-gray-600">
+                        <div className="flex flex-col sm:flex-row justify-between items-center p-3 border-t border-gray-200 text-xs">
+                            <div className="mb-2 sm:mb-0 text-gray-600">
                                 {sortedStockLevels.length} résultat{sortedStockLevels.length > 1 && 's'} • Page {currentPage} sur {totalPages}
                             </div>
-                            
-                            <div className="flex items-center gap-4">
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-3.5 py-1.5 rounded-2xl text-gray-700 hover:bg-gray-100 
-                                               disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
-                                    >
-                                        ← Précédent
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-3.5 py-1.5 rounded-2xl text-gray-700 hover:bg-gray-100 
-                                               disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
-                                    >
-                                        Suivant →
-                                    </button>
-                                </div>
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-2 py-1 rounded-lg text-gray-600 hover:bg-gray-100 
+                                             disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
+                                >
+                                    ←
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-2 py-1 rounded-lg text-gray-600 hover:bg-gray-100 
+                                             disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
+                                >
+                                    →
+                                </button>
                             </div>
                         </div>
 
                         {filteredStockLevels.length === 0 && (
-                            <div className="p-6 text-center text-gray-500 text-sm">
+                            <div className="p-4 text-center text-gray-500 text-xs">
                                 Aucun niveau de stock trouvé
                             </div>
                         )}

@@ -2,6 +2,7 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { Layout } from '@/Layouts/layout';
 import toast from 'react-hot-toast';
+import { can } from '@/helpers';
 
 interface Brand {
     id: number;
@@ -46,7 +47,8 @@ export default function Edit({ powerSupply, brands, servers }: Props) {
         _method: 'PUT',
     });
 
-    const { flash } = usePage().props;
+    const { flash, auth } = usePage().props;
+    const user = auth.user;
     const [selectedImage, setSelectedImage] = useState<string | null>(
         powerSupply.image?.url ? `/storage/${powerSupply.image.url}` : null
     );
@@ -71,13 +73,20 @@ export default function Edit({ powerSupply, brands, servers }: Props) {
         e.preventDefault();
         const formData = new FormData();
 
-        Object.entries(data).forEach(([key, value]) => {
-            if (key === 'server_ids') {
-                value.forEach((id: number) => formData.append('server_ids[]', id.toString()));
-            } else if (value !== null && value !== undefined) {
-                formData.append(key, value.toString());
-            }
-        });
+        formData.append('_method', 'PUT');
+        formData.append('name', data.name);
+        formData.append('brand_id', String(data.brand_id));
+        formData.append('capacity', String(data.capacity));
+        formData.append('efficiency', data.efficiency);
+        formData.append('form_factor', data.form_factor);
+        formData.append('modular', String(data.modular));
+        formData.append('price', String(data.price));
+
+        data.server_ids.forEach((id) => formData.append('server_ids[]', String(id)));
+
+        if (data.image) {
+            formData.append('image', data.image);
+        }
 
         post(`/power-supplies/${powerSupply.id}`, {
             data: formData,
@@ -93,205 +102,210 @@ export default function Edit({ powerSupply, brands, servers }: Props) {
         });
     };
 
+    useEffect(() => {
+        if (powerSupply.image) {
+            setSelectedImage(`/storage/${powerSupply.image.url}`);
+        }
+    }, [powerSupply]);
+
     return (
         <Layout>
-            <div className="mx-auto max-w-full p-5 sm:px-6 lg:px-8 space-y-8 bg-white">
-                <div className="space-y-2">
-                    <h1 className="text-2xl font-semibold text-gray-900">Modifier l'Alimentation</h1>
-                    <p className="text-gray-600">Mettez à jour les spécifications techniques de l'alimentation</p>
+            <div className="mx-auto max-w-full p-4 sm:px-6 lg:px-8 space-y-6 bg-white">
+                <div className="space-y-1">
+                    <h1 className="text-lg font-semibold text-gray-900">Modifier l'Alimentation</h1>
+                    <p className="text-xs text-gray-600">Mettez à jour les spécifications techniques de l'alimentation</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="space-y-6">
-                        <div className="space-y-4">
-                            {/* Nom et Marque */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                                        Nom de l'alimentation
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                    {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                                        Marque
-                                    </label>
-                                    <select
-                                        value={data.brand_id}
-                                        onChange={(e) => setData('brand_id', e.target.value)}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    >
-                                        <option value="">Sélectionner une marque</option>
-                                        {brands.map((brand) => (
-                                            <option key={brand.id} value={brand.id}>
-                                                {brand.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.brand_id && <p className="text-red-600 text-sm mt-1">{errors.brand_id}</p>}
-                                </div>
-                            </div>
-
-                            <hr className="border-gray-200" />
-
-                            {/* Spécifications techniques */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                                            Capacité (W)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={data.capacity}
-                                            onChange={(e) => setData('capacity', e.target.value)}
-                                            className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                        {errors.capacity && <p className="text-red-600 text-sm mt-1">{errors.capacity}</p>}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                                            Efficacité
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.efficiency}
-                                            onChange={(e) => setData('efficiency', e.target.value)}
-                                            className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                        {errors.efficiency && <p className="text-red-600 text-sm mt-1">{errors.efficiency}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                                            Format
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.form_factor}
-                                            onChange={(e) => setData('form_factor', e.target.value)}
-                                            className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                        {errors.form_factor && <p className="text-red-600 text-sm mt-1">{errors.form_factor}</p>}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                                            Modulaire
-                                        </label>
-                                        <select
-                                            value={data.modular ? 'true' : 'false'}
-                                            onChange={(e) => setData('modular', e.target.value === 'true')}
-                                            className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        >
-                                            <option value="true">Oui</option>
-                                            <option value="false">Non</option>
-                                        </select>
-                                        {errors.modular && <p className="text-red-600 text-sm mt-1">{errors.modular}</p>}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr className="border-gray-200" />
-
-                            {/* Prix et Serveurs */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                                        Prix (€)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={data.price}
-                                        onChange={(e) => setData('price', e.target.value)}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                    {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                                        Serveurs associés
-                                    </label>
-                                    <select
-                                        multiple
-                                        value={data.server_ids}
-                                        onChange={(e) => setData('server_ids', Array.from(e.target.selectedOptions, option => parseInt(option.value)))}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    >
-                                        {servers.map((server) => (
-                                            <option key={server.id} value={server.id}>
-                                                {server.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        Maintenez Ctrl (Windows) ou ⌘ (Mac) pour sélectionner plusieurs
-                                    </p>
-                                    {errors.server_ids && <p className="text-red-600 text-sm mt-1">{errors.server_ids}</p>}
-                                </div>
-                            </div>
-
-                            <hr className="border-gray-200" />
-
-                            {/* Upload d'image */}
+                <form onSubmit={handleSubmit} className="space-y-4 w-full">
+                    <div className="space-y-3 w-full">
+                        {/* Nom et Marque */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-700">
-                                    Image
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Nom de l'alimentation
                                 </label>
-                                <div className="flex items-center justify-center w-full">
-                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg border-gray-300 bg-gray-50 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                                        <input
-                                            type="file"
-                                            onChange={handleImageChange}
-                                            className="hidden"
-                                        />
-                                        <span className="text-gray-500">
-                                            {data.image ? data.image.name : 'Glissez-déposez ou cliquez pour uploader'}
-                                        </span>
-                                    </label>
-                                </div>
-                                {selectedImage && (
-                                    <div className="mt-4">
-                                        <img
-                                            src={selectedImage}
-                                            alt="Prévisualisation"
-                                            className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
-                                        />
-                                    </div>
-                                )}
-                                <p className="mt-2 text-sm text-gray-500">
-                                    PNG, JPG, JPEG (Max. 2MB)
-                                </p>
-                                {errors.image && <p className="text-red-600 text-sm mt-1">{errors.image}</p>}
+                                <input
+                                    type="text"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                                {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Marque
+                                </label>
+                                <select
+                                    value={data.brand_id}
+                                    onChange={(e) => setData('brand_id', e.target.value)}
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                >
+                                    <option value="">Sélectionner une marque</option>
+                                    {brands.map((brand) => (
+                                        <option key={brand.id} value={brand.id}>
+                                            {brand.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.brand_id && <p className="text-red-600 text-xs mt-1">{errors.brand_id}</p>}
                             </div>
                         </div>
 
+                        <hr className="border-gray-200" />
+
+                        {/* Spécifications techniques */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Capacité (W)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={data.capacity}
+                                    onChange={(e) => setData('capacity', e.target.value)}
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                                {errors.capacity && <p className="text-red-600 text-xs mt-1">{errors.capacity}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Efficacité
+                                </label>
+                                <input
+                                    type="text"
+                                    value={data.efficiency}
+                                    onChange={(e) => setData('efficiency', e.target.value)}
+                                    placeholder="Ex: 80+ Gold"
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                                {errors.efficiency && <p className="text-red-600 text-xs mt-1">{errors.efficiency}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Format
+                                </label>
+                                <input
+                                    type="text"
+                                    value={data.form_factor}
+                                    onChange={(e) => setData('form_factor', e.target.value)}
+                                    placeholder="Ex: 80+ Gold"
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                                {errors.form_factor && <p className="text-red-600 text-xs mt-1">{errors.form_factor}</p>}
+                            </div>
+
+
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Modulaire
+                                </label>
+                                <select
+                                    value={data.modular ? 'true' : 'false'}
+                                    onChange={(e) => setData('modular', e.target.value === 'true')}
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                >
+                                    <option value="true">Oui</option>
+                                    <option value="false">Non</option>
+                                </select>
+                                {errors.modular && <p className="text-red-600 text-xs mt-1">{errors.modular}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Prix (€)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={data.price}
+                                    onChange={(e) => setData('price', e.target.value)}
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                                {errors.price && <p className="text-red-600 text-xs mt-1">{errors.price}</p>}
+                            </div>
+                        </div>
+
+                        <hr className="border-gray-200" />
+
+                        {/* Serveurs compatibles */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1 text-gray-700">
+                                Serveurs compatibles
+                            </label>
+                            <select
+                                multiple
+                                value={data.server_ids}
+                                onChange={(e) => setData('server_ids', Array.from(e.target.selectedOptions, option => parseInt(option.value)))}
+                                className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            >
+                                {servers.map((server) => (
+                                    <option key={server.id} value={server.id}>
+                                        {server.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="mt-2 text-xs text-gray-500">
+                                Maintenez Ctrl (Windows) ou ⌘ (Mac) pour sélectionner plusieurs
+                            </p>
+                            {errors.server_ids && <p className="text-red-600 text-xs mt-1">{errors.server_ids}</p>}
+                        </div>
+
+                        <hr className="border-gray-200" />
+
+                        {/* Upload d'image */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1 text-gray-700">
+                                Image
+                            </label>
+                            <div className="flex items-center justify-center w-full">
+                                <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-md border-gray-300 bg-gray-50 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                                    <input
+                                        type="file"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                    />
+                                    <span className="text-gray-500 text-sm">
+                                        {data.image ? data.image.name : 'Glissez-déposez ou cliquez pour uploader'}
+                                    </span>
+                                </label>
+                            </div>
+                            {selectedImage && (
+                                <div className="mt-4">
+                                    <img
+                                        src={selectedImage}
+                                        alt="Prévisualisation"
+                                        className="w-32 h-32 object-cover rounded-md border-2 border-gray-200"
+                                    />
+                                </div>
+                            )}
+                            <p className="mt-2 text-xs text-gray-500">
+                                PNG, JPG, JPEG (Max. 2MB)
+                            </p>
+                            {errors.image && <p className="text-red-600 text-xs mt-1">{errors.image}</p>}
+                        </div>
+
                         {/* Actions */}
-                        <div className="flex justify-end gap-4 pt-6">
+                        <div className="flex justify-end gap-3 pt-4 w-full">
                             <Link
                                 href="/power-supplies"
-                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="px-4 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                             >
                                 Annuler
                             </Link>
-                            <button
-                                type="submit"
-                                disabled={!!progress}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm disabled:opacity-50"
-                            >
-                                {progress ? 'Enregistrement...' : 'Mettre à jour l\'alimentation'}
-                            </button>
+                            {can(user, 'Edit_Composants') &&
+                                <button
+                                    type="submit"
+                                    disabled={!!progress}
+                                    className="px-4 py-1 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm disabled:opacity-50"
+                                >
+                                    {progress ? 'Enregistrement...' : 'Mettre à jour'}
+                                </button>
+                            }
                         </div>
                     </div>
                 </form>

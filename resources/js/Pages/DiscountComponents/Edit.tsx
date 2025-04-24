@@ -4,6 +4,7 @@ import { Link } from '@inertiajs/inertia-react';
 import { Layout } from '@/Layouts/layout';
 import { usePage } from '@inertiajs/react';
 import toast from 'react-hot-toast';
+import { can } from '@/helpers';
 
 const EditDiscount = ({
     discount,
@@ -22,7 +23,8 @@ const EditDiscount = ({
     cable_connectors,
     batteries,
 }: any) => {
-    const { flash } = usePage().props;
+    const { flash, auth } = usePage().props;
+    const user = auth.user;
     const [formData, setFormData] = useState({
         name: discount.name,
         discount_type: discount.discount_type,
@@ -113,26 +115,26 @@ const EditDiscount = ({
 
     return (
         <Layout>
-            <div className="mx-auto max-w-full p-5 sm:px-6 lg:px-8 space-y-8 bg-white">
+            <div className="mx-auto max-w-full p-4 sm:px-6 lg:px-8 space-y-6 bg-white">
                 <div className="flex justify-between items-center">
-                    <div className="space-y-2">
-                        <h1 className="text-2xl font-semibold text-gray-900">Modifier la remise</h1>
-                        <p className="text-gray-600">Mettez à jour les paramètres de la remise promotionnelle</p>
+                    <div className="space-y-1">
+                        <h1 className="text-lg font-semibold text-gray-900">Modifier la remise</h1>
+                        <p className="text-xs text-gray-600">Mettez à jour les paramètres de la remise promotionnelle</p>
                     </div>
                     <Link 
                         href="/discountComponents"
-                        className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                     >
                         ← Retour
                     </Link>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-3">
                         {/* Informations de base */}
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-700">
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
                                     Nom de la remise
                                 </label>
                                 <input
@@ -140,23 +142,20 @@ const EditDiscount = ({
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
                             </div>
 
-                            <hr className="border-gray-200" />
-
-                            {/* Type et valeur */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
+                                    <label className="block text-sm font-medium mb-1 text-gray-700">
                                         Type de remise
                                     </label>
                                     <select
                                         name="discount_type"
                                         value={formData.discount_type}
                                         onChange={handleChange}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     >
                                         <option value="percentage">Pourcentage</option>
                                         <option value="fixed">Montant fixe</option>
@@ -164,7 +163,7 @@ const EditDiscount = ({
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
+                                    <label className="block text-sm font-medium mb-1 text-gray-700">
                                         Valeur {formData.discount_type === 'percentage' ? '(%)' : '(€)'}
                                     </label>
                                     <input
@@ -172,38 +171,7 @@ const EditDiscount = ({
                                         name="value"
                                         value={formData.value}
                                         onChange={handleChange}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                </div>
-                            </div>
-
-                            <hr className="border-gray-200" />
-
-                            {/* Dates */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                                        Date de début
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="start_date"
-                                        value={formData.start_date}
-                                        onChange={handleChange}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2 text-gray-700">
-                                        Date de fin
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="end_date"
-                                        value={formData.end_date}
-                                        onChange={handleChange}
-                                        className="w-full rounded-xl border-gray-300 bg-white px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     />
                                 </div>
                             </div>
@@ -211,58 +179,95 @@ const EditDiscount = ({
 
                         <hr className="border-gray-200" />
 
-                        {/* Composants concernés */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-medium text-gray-900">Composants éligibles</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {componentGroups.map((group) => (
-                                    <div key={group.type} className="border rounded-xl p-4 bg-gray-50">
-                                        <h4 className="font-medium mb-3">{group.name}</h4>
-                                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                                            {group.items.length === 0 ? (
-                                                <p className="text-gray-500 text-sm">Aucun élément disponible</p>
-                                            ) : (
-                                                group.items.map((item: any) => {
-                                                    const isSelected = formData.selectedComponents[group.type].includes(item.id);
-                                                    return (
-                                                        <label 
-                                                            key={item.id}
-                                                            className={`flex items-center p-2 rounded cursor-pointer ${
-                                                                isSelected ? 'bg-blue-100' : 'hover:bg-gray-200'
-                                                            }`}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={isSelected}
-                                                                onChange={() => handleComponentChange(group.type, item.id)}
-                                                                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                                            />
-                                                            <span className="ml-2 text-sm">{item.name}</span>
-                                                        </label>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                        {/* Dates */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Date de début
+                                </label>
+                                <input
+                                    type="date"
+                                    name="start_date"
+                                    value={formData.start_date}
+                                    onChange={handleChange}
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1 text-gray-700">
+                                    Date de fin
+                                </label>
+                                <input
+                                    type="date"
+                                    name="end_date"
+                                    value={formData.end_date}
+                                    onChange={handleChange}
+                                    className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
                             </div>
                         </div>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex justify-end gap-4 pt-6">
-                        <Link
-                            href="/discountComponents"
-                            className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            Annuler
-                        </Link>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm"
-                        >
-                            Enregistrer les modifications
-                        </button>
+                        <hr className="border-gray-200" />
+
+                        {/* Composants concernés */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-medium text-gray-900">Composants éligibles</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {componentGroups.map((group: any) => {
+                                    const itemsArray = Array.isArray(group.items) ? group.items : [];
+                                    
+                                    return (
+                                        <div key={group.type} className="border rounded-md p-3 bg-gray-50">
+                                            <h4 className="text-sm font-medium mb-2">{group.name}</h4>
+                                            <div className="space-y-1 max-h-40 overflow-y-auto">
+                                                {itemsArray.length === 0 ? (
+                                                    <p className="text-gray-500 text-xs">Aucun élément disponible</p>
+                                                ) : (
+                                                    itemsArray.map((item: any) => {
+                                                        const isSelected = formData.selectedComponents[group.type].includes(item.id);
+                                                        return (
+                                                            <label 
+                                                                key={item.id}
+                                                                className={`flex items-center p-1.5 rounded cursor-pointer ${
+                                                                    isSelected ? 'bg-blue-100 border-blue-300' : 'hover:bg-gray-100'
+                                                                }`}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={isSelected}
+                                                                    onChange={() => handleComponentChange(group.type, item.id)}
+                                                                    className="h-3.5 w-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                                />
+                                                                <span className="ml-2 text-xs">{item.name}</span>
+                                                            </label>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end gap-3 pt-4">
+                            <Link
+                                href="/discountComponents"
+                                className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                            >
+                                Annuler
+                            </Link>
+                            {can(user, 'Edit_Discounts_Composants') && (
+                                <button
+                                    type="submit"
+                                    className="px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-colors"
+                                >
+                                    Enregistrer
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </form>
             </div>

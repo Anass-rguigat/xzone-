@@ -11,7 +11,8 @@ export const Navbar = () => {
   const user: User = props.auth.user 
 
   return (
-    <header className="stocky z-10 bg-gray-50  top-0 flex shrink-0 items-center gap-2 border-b h-16 px-3">
+<header className="z-10 bg-gray-50 top-0 flex items-center gap-2 border-b h-14 px-3 w-full">
+
       <SidebarTrigger />
     </header>
   )

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enum\RolesEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +36,10 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => 'required|string|max:20', 
+            'city' => 'required|string|max:255',  
+            'country' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
         ]);
 
         $user = User::create([
@@ -42,10 +48,21 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        Customer::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'city' => $request->city,
+            'country' => $request->country,
+            'address' => $request->address,
+            'hasCompte' => true,
+        ]);
+
+        $user->assignRole(RolesEnum::User->value);
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('profile.edit', absolute: false));
     }
 }

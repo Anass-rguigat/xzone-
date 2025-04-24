@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enum\RolesEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,14 @@ class ConfirmablePasswordController extends Controller
         }
 
         $request->session()->put('auth.password_confirmed_at', time());
+        $user = $request->user();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if ($user->hasRole(RolesEnum::SuperAdmin->value)) {
+            return redirect()->intended(route('profile.edit', absolute: false));
+        } elseif ($user->hasRole(RolesEnum::Admin->value)) {
+            return redirect()->intended(route('profile.edit', absolute: false));
+        } else {
+            return redirect()->intended(route('profile.edit', absolute: false));
+        }
     }
 }

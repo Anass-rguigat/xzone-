@@ -1,5 +1,6 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Layout } from '@/Layouts/layout';
+import { can } from '@/helpers';
 
 interface Brand {
     id: number;
@@ -31,6 +32,8 @@ interface Props {
 }
 
 export default function Show({ ram }: Props) {
+    const { auth } = usePage().props;
+    const user = auth.user;
     return (
         <Layout>
             <h2 className="text-3xl font-semibold leading-tight text-gray-800 dark:text-gray-200 p-2">
@@ -96,13 +99,13 @@ export default function Show({ ram }: Props) {
                             <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 
                             <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-                                <Link
+                            {can(user, 'Edit_Composants') &&<Link
                                     href={`/rams/${ram.id}/edit`}
                                     className="text-green-900 hover:text-white border border-green-800 hover:bg-green-900 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:border-green-600 dark:text-green-400 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800"
                                     role="button"
                                 >
                                     Modifier
-                                </Link>
+                                </Link>}
 
                                 <Link
                                     href="/rams"

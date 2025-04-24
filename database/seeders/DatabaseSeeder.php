@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enum\PermissionsEnum;
 use App\Enum\RolesEnum;
+use App\Models\Customer;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -17,63 +18,56 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create roles
+        $userRole = Role::create(['name' => RolesEnum::User->value]);
+        $adminRole = Role::create(['name' => RolesEnum::Admin->value]);
+        $superadminRole = Role::create(['name' => RolesEnum::SuperAdmin->value]);
 
-        $userRole = Role::create(['name'=>RolesEnum::User->value]);
-        $adminRole = Role::create(['name'=>RolesEnum::Admin->value]);
-        $superadminRole = Role::create(['name'=>RolesEnum::SuperAdmin->value]);
-        
-        $ManageBrandsPermission = Permission::create([
-            'name' => PermissionsEnum::ManageBrands->value,
-        ]);
+        // Create permissions based on PermissionsEnum
+        $permissions = [];
+        foreach (PermissionsEnum::cases() as $permission) {
+            $permissions[] = Permission::create([
+                'name' => $permission->value,
+            ]);
+        }
 
-        $ManageServersPermission = Permission::create([
-            'name' => PermissionsEnum::ManageServers->value,
-        ]);
 
-        $ManageComposantsPermission = Permission::create([
-            'name' => PermissionsEnum::ManageComposants->value,
-        ]);
 
-        $ManageUsersPermission = Permission::create([
-            'name' => PermissionsEnum::ManageUsers->value,
-        ]);
+        $superadminRole->syncPermissions($permissions);
 
-        $adminRole->syncPermissions([
-            $ManageComposantsPermission,
-            $ManageServersPermission,
-            $ManageBrandsPermission
-        ]);
-
-        $superadminRole->syncPermissions([
-            $ManageComposantsPermission,
-            $ManageServersPermission,
-            $ManageBrandsPermission,
-            $ManageUsersPermission
-        ]);
-
-        //$userRole->syncPermissions([
-        //    $ManageComposantsPermission,
-        //   $ManageServersPermission,
-        //    $ManageBrandsPermission
-        //]);
-        
-
+        // Create Users
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@example.com',
-
-        ])->assignRole(RolesEnum::Admin);
+        ])->assignRole(RolesEnum::Admin->value);
 
         User::factory()->create([
             'name' => 'Super Admin',
             'email' => 'superadmin@example.com',
+        ])->assignRole(RolesEnum::SuperAdmin->value)->syncPermissions($permissions);
 
-        ])->assignRole(RolesEnum::SuperAdmin);
+        
 
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'User',
             'email' => 'user@example.com',
+            'phone' => '0606060606',
+            'city' => 'Paris',
+            'country' => 'France',
+            'address' => '123 rue de la paix',
+        ]);
 
-        ])->assignRole(RolesEnum::User);
+        $user->assignRole(RolesEnum::User->value);
+
+
+        Customer::create([
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => '0606060606',
+            'address' => '123 rue de la paix',
+            'city' => 'Paris',
+            'country' => 'France',
+            'hasCompte' => true,
+        ]);
     }
 }

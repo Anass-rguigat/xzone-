@@ -4,6 +4,7 @@ import {
   Bookmark,
   BookOpen,
   Bot,
+  ClipboardList,
   Command,
   Cpu,
   Frame,
@@ -15,6 +16,7 @@ import {
   Settings2,
   SquareTerminal,
   Tag,
+  Users,
   Warehouse,
 } from "lucide-react"
 
@@ -33,6 +35,8 @@ import {
 import { ScrollArea } from "./ui/scroll-area"
 import { usePage } from "@inertiajs/react"
 import { User } from "@/types"
+import { NavcCustomer } from "./nav-customer"
+
 // This is sample data.
 const data = {
   
@@ -46,346 +50,182 @@ const data = {
   ],
   navMain: [
     {
-      title: "Brands",
-      url: "#",
+      title: "Marques", // "Brands"
+      url: "/brands/",
       icon: Bookmark,
-      items: [
-        {
-          title: "Affichage Brands",
-          url: "/brands/",
-        },
-        {
-          title: "Ajoute Brand",
-          url: "/brands/create",
-        },
-      ],
+      permissions: ["List_Brands"], // Permission required to view "Brands"
     },
     {
-      title: "Composants", 
+      title: "Composants", // "Components"
       url: "#",
       icon: Cpu,
-      isActive: true,
+      isActive: false,
+      permissions: ["List_Composants"], // Permission for "Composants" section
       items: [
         {
           title: "Rams",
-          url: "#",
-          items: [
-            {
-              title: "Affichage Rams",
-              url: "/rams/", 
-            },
-            {
-              title: "Ajouter Ram", 
-              url: "/rams/create/", 
-            },
-            
-          ],
+          url: "/rams/",
+          permissions: ["List_Composants"], // Permission for "Rams"
         },
         {
-          title: "Disque Dur", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Disque Dur", 
-              url: "/hard-drives/", 
-            },
-            {
-              title: "Ajouter Disque Dur", 
-              url: "/hard-drives/create/", 
-            },
-            
-          ],
+          title: "Disque Dur", // "Hard Drive"
+          url: "/hard-drives/",
+          permissions: ["List_Composants"], // Permission for "Hard Drive"
         },
         {
-          title: "Processor", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Processors", 
-              url: "/processors/", 
-            },
-            {
-              title: "Ajouter Processor",
-              url: "/processors/create", 
-            },
-            
-          ],
+          title: "Processeur", // "Processor"
+          url: "/processors/",
+          permissions: ["List_Composants"], // Permission for "Processor"
         },
         {
-          title: "Power-supplies", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Power supplies", 
-              url: "/power-supplies/", 
-            },
-            {
-              title: "Ajouter Power supplie", 
-              url: "/power-supplies/create", 
-            },
-            
-          ],
+          title: "Alimentations", // "Power Supplies"
+          url: "/power-supplies/",
+          permissions: ["List_Composants"], // Permission for "Power Supplies"
         },
         {
-          title: "Motherboards", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Power motherboards", 
-              url: "/motherboards/", 
-            },
-            {
-              title: "Ajouter Power motherboard", 
-              url: "/motherboards/create", 
-            },
-            
-          ],
+          title: "Cartes Mères", // "Motherboards"
+          url: "/motherboards/",
+          permissions: ["List_Composants"], // Permission for "Motherboards"
         },
         {
-          title: "Network Cards", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Network Cards", 
-              url: "/network-cards/", 
-            },
-            {
-              title: "Ajouter Network Card", 
-              url: "/network-cards/create", 
-            },
-            
-          ],
+          title: "Cartes Réseau", // "Network Cards"
+          url: "/network-cards/",
+          permissions: ["List_Composants"], // Permission for "Network Cards"
         },
         {
-          title: "Raid Controllers", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Raid Controllers", 
-              url: "/raid-controllers/", 
-            },
-            {
-              title: "Ajouter Raid Controller", 
-              url: "/raid-controllers/create", 
-            },
-            
-          ],
+          title: "Contrôleurs RAID", // "Raid Controllers"
+          url: "/raid-controllers/",
+          permissions: ["List_Composants"], // Permission for "Raid Controllers"
         },
         {
-          title: "Cooling Solutions", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Cooling Solutions", 
-              url: "/cooling-solutions/", 
-            },
-            {
-              title: "Ajouter Cooling Solution", 
-              url: "/cooling-solutions/create", 
-            },
-            
-          ],
+          title: "Solutions de Refroidissement", // "Cooling Solutions"
+          url: "/cooling-solutions/",
+          permissions: ["List_Composants"], // Permission for "Cooling Solutions"
         },
         {
-          title: "Chassis", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Chassis", 
-              url: "/chassis/", 
-            },
-            {
-              title: "Ajouter Chassis", 
-              url: "/chassis/create", 
-            },
-            
-          ],
+          title: "Châssis", // "Chassis"
+          url: "/chassis/",
+          permissions: ["List_Composants"], // Permission for "Chassis"
         },
         {
-          title: "Graphic Cards", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Graphic Cards", 
-              url: "/graphic-cards/", 
-            },
-            {
-              title: "Ajouter Graphic Card", 
-              url: "/graphic-cards/create", 
-            },
-            
-          ],
+          title: "Cartes Graphiques", // "Graphics Cards"
+          url: "/graphic-cards/",
+          permissions: ["List_Composants"], // Permission for "Graphics Cards"
         },
         {
-          title: "Fiber Optic Cards", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Fiber Optic Cards", 
-              url: "/fiber-optic-cards/", 
-            },
-            {
-              title: "Ajouter Fiber Optic Card", 
-              url: "/fiber-optic-cards/create", 
-            },
-            
-          ],
+          title: "Cartes Fibre Optique", // "Fiber Optic Cards"
+          url: "/fiber-optic-cards/",
+          permissions: ["List_Composants"], // Permission for "Fiber Optic Cards"
         },
         {
-          title: "Expansion Cards", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Fiber Expansion Cards", 
-              url: "/expansion-cards/", 
-            },
-            {
-              title: "Ajouter Fiber Expansion Card", 
-              url: "/expansion-cards/create", 
-            },
-            
-          ],
+          title: "Cartes d'Extension", // "Expansion Cards"
+          url: "/expansion-cards/",
+          permissions: ["List_Composants"], // Permission for "Expansion Cards"
         },
         {
           title: "Batteries", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Batteries", 
-              url: "/batteries/",
-            },
-            {
-              title: "Ajouter Battery", 
-              url: "/batteries/create",
-            },
-            
-          ],
+          url: "/batteries/",
+          permissions: ["List_Composants"], // Permission for "Batteries"
         },
         {
-          title: "cables", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage cables", 
-              url: "/cable-connectors/", 
-            },
-            {
-              title: "Ajouter cable", 
-              url: "/cable-connectors/create",
-            },
-            
-          ],
+          title: "Câbles", // "Cables"
+          url: "/cable-connectors/",
+          permissions: ["List_Composants"], // Permission for "Cables"
         },
       ],
-      
     },
     {
-      title: "Servers",
-      url: "#",
+      title: "Serveurs", // "Servers"
+      url: "/servers/",
       icon: Server,
-      items: [
-        {
-          title: "Affichage servers", 
-          url: "/servers/",
-          
-        },
-        {
-          title: "Ajouter servers",
-          url: "/servers/create",
-          
-        },
-      ]
+      permissions: ["List_Servers"], // Permission for "Servers"
     },
     {
-      title: "Discount", 
+      title: "Réductions", // "Discount"
       url: "#",
       icon: Tag,
-      isActive: true,
+      isActive: false,
+      permissions: ["List_Discounts_Servers", "List_Discounts_Composants"], // Permissions for Discounts
       items: [
         {
-          title: "Servers",
-          url: "#",
-          items: [
-            {
-              title: "Affichage Servers",
-              url: "/discounts/", 
-            },
-            {
-              title: "Ajouter Servers", 
-              url: "/discounts/create/", 
-            },
-            
-          ],
+          title: "Serveurs",
+          url: "/discounts/",
+          permissions: ["List_Discounts_Servers"], // Permission for "Discounts - Servers"
         },
         {
-          title: "Composants", 
-          url: "#",
-          items: [
-            {
-              title: "Affichage Composants", 
-              url: "/discountComponents/", 
-            },
-            {
-              title: "Ajouter Composants", 
-              url: "/discountComponents/create/", 
-            },
-            
-          ],
+          title: "Composants", // "Components"
+          url: "/discountComponents/",
+          permissions: ["List_Discounts_Composants"], // Permission for "Discounts - Components"
         },
-        
       ],
-      
     },
     {
-      title: "Fournisseurs",
-      url: "#",
+      title: "Fournisseurs", // "Suppliers"
+      url: "/suppliers/",
       icon: Package,
-      items: [
-        {
-          title: "Affichage Fournisseurs",
-          url: "/suppliers/",
-        },
-        {
-          title: "Ajoute Fournisseurs",
-          url: "/suppliers/create",
-        },
-      ],
+      permissions: ["List_Suppliers"], // Permission for "Suppliers"
     },
     {
-      title: "Stock", 
+      title: "Stock",
       url: "#",
       icon: Warehouse,
-      isActive: true,
+      isActive: false,
+      permissions: ["List_Stock_Mouvements", "List_Stock_Mouvements"], // Permissions for "Stock"
       items: [
         {
-          title: "Mouvement",
-          url: "#",
-          items: [
-            {
-              title: "Affichage ",
-              url: "/stock-movements/", 
-            },
-            {
-              title: "Ajouter", 
-              url: "/stock-movements/create/", 
-            },
-            
-          ],
+          title: "Mouvement", // "Movement"
+          url: "/stock-movements/",
+          permissions: ["List_Stock_Mouvements"], // Permission for "Stock Movements"
         },
         {
-          title: "Levels", 
+          title: "Niveaux", // "Levels"
           url: "/stock-levels/",
+          permissions: ["List_Stock_Levels"], // Permission for "Stock Levels"
         },
-        
       ],
-      
     },
   ],
   projects: [
     {
-      name: "Sales & Marketing",
+      permissions: ["List_Dashboard"],
+      name: "Ventes & Marketing", // "Sales & Marketing"
       url: "/dashboard",
       icon: PieChart,
+    },
+  ],
+  customers: [
+    {
+      title: "Comptes", 
+      url: "#",
+      icon: Users,
+      isActive: false,
+      permissions: ["manage_users"],
+      items: [
+        {
+          title: "Rôles & Permissions",
+          url: "/users/",
+          permissions:  ["manage_users"], 
+        },
+        {
+          title: "Profil", 
+          url: "/profile/",
+        },
+        {
+          title: "Clients Informations",
+          url: "/customers/",
+          permissions:  ["manage_users"], 
+        },
+        {
+          title: "Audits Connexions", 
+          url: "/discountComponents/",
+          permissions:  ["manage_users"],
+        },
+        {
+          title: "Audits logs", 
+          url: "/discountComponents/",
+          permissions:  ["manage_users"],
+        },
+      ],
     },
   ],
 }
@@ -393,23 +233,64 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { props: pageProps } = usePage()
   const user: User = pageProps.auth.user 
+  const { open, setOpen } = useSidebar()
+  const [hovered, setHovered] = React.useState(false)
 
+  const handleMouseEnter = () => {
+    setHovered(true)
+    if (!open) {
+      setOpen(true)
+    }
+  }
+  const hasPermission = (requiredPermissions: string[]) => {
+    return requiredPermissions.some(perm => user.permissions.includes(perm))
+  }
 
-  return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-      <ScrollArea>
-          <NavProjects projects={data.projects} />
-          <NavMain items={data.navMain} />
-        </ScrollArea>
-      </SidebarContent>
-      <SidebarFooter>
-        {user ? <NavUser isNavbar btnClassName="hover:bg-transaparent focus-visible:ring-0" user={user} /> : <p>Loading...</p>}
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
-  )
-}
+  const filterNavItems = (items: any[]): any[] => {
+    return items
+      .filter(item => {
+        if (!item.permissions) return true
+        return hasPermission(item.permissions)
+      })
+      .map(item => {
+        if (item.items) {
+          const filteredSubItems = filterNavItems(item.items)
+          return filteredSubItems.length > 0 
+            ? { ...item, items: filteredSubItems }
+            : null
+        }
+        return item
+      })
+      .filter(item => item !== null)
+  }
+
+  const filteredNavMain = React.useMemo(() => filterNavItems(data.navMain), [user.permissions])
+  const filteredProjects = React.useMemo(() => 
+    data.projects.filter(project => hasPermission(project.permissions)), 
+    [user.permissions])
+  const filteredCustomers = React.useMemo(() => filterNavItems(data.customers), [user.permissions])
+
+    return (
+      <div 
+        onMouseEnter={handleMouseEnter}
+        className="h-full"
+      >
+        <Sidebar collapsible="icon" {...props}>
+          <SidebarHeader>
+            <TeamSwitcher teams={data.teams} />
+          </SidebarHeader>
+          <SidebarContent>
+            <ScrollArea>
+              {filteredProjects.length > 0 && <NavProjects projects={filteredProjects} />}
+              {filteredCustomers.length > 0 && <NavcCustomer items={filteredCustomers} />}
+              <NavMain items={filteredNavMain} />
+            </ScrollArea>
+          </SidebarContent>
+          <SidebarFooter>
+            {user ? <NavUser isNavbar btnClassName="hover:bg-transparent focus-visible:ring-0" user={user} /> : <p>Loading...</p>}
+          </SidebarFooter>
+          <SidebarRail />
+        </Sidebar>
+      </div>
+    )
+  }

@@ -2,7 +2,8 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { Layout } from '@/Layouts/layout';
 import toast from 'react-hot-toast';
-import { PlusIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, SearchIcon } from 'lucide-react';
+import { PlusIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, SearchIcon} from 'lucide-react';
+import { can } from '@/helpers';
 
 interface Brand {
     id: number;
@@ -40,7 +41,8 @@ export default function Index({ fiberOpticCards }: Props) {
     const [sortConfig, setSortConfig] = useState<{ key: keyof FiberOpticCard; direction: 'asc' | 'desc' } | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
-    const { flash } = usePage().props;
+    const { flash, auth } = usePage().props;
+    const user = auth.user;
 
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);
@@ -48,11 +50,13 @@ export default function Index({ fiberOpticCards }: Props) {
     }, [flash]);
 
     const handleDelete = (id: number) => {
+        if (confirm("Voulez-vous vraiment supprimer cette carte optique ?")) {
             destroy(`/fiber-optic-cards/${id}`, {
                 preserveScroll: true,
                 onSuccess: () => toast.success('Carte optique supprimée avec succès'),
                 onError: () => toast.error('Erreur lors de la suppression'),
             });
+        }
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,39 +106,41 @@ export default function Index({ fiberOpticCards }: Props) {
 
     return (
         <Layout>
-            <div className="p-6 min-h-screen bg-white rounded-2xl">
+            <div className="p-10 min-h-screen bg-white rounded-lg w-full">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
-                        <h1 className="text-2xl font-bold text-gray-900">
+                    <div className="flex flex-col md:flex-row justify-between mb-4 gap-2">
+                        <h1 className="text-lg font-semibold text-gray-900">
                             Gestion des Cartes Optiques
                         </h1>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="relative flex-1 max-w-xs">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <div className="relative w-full sm:w-auto flex-1">
                                 <input
                                     type="text"
-                                    className="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-xl text-gray-700 
-                                               focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30
-                                               placeholder-gray-400 transition-all bg-white"
+                                    className="w-full pl-3 pr-9 py-1.5 border border-gray-300 rounded-lg text-sm 
+                                           focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30
+                                           placeholder-gray-400 bg-white"
                                     placeholder="Rechercher..."
                                     value={searchTerm}
                                     onChange={handleSearchChange}
                                 />
-                                <SearchIcon className="h-5 w-5 absolute right-3 top-3 text-gray-400" />
+                                <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
-                            <Link
-                                href="/fiber-optic-cards/create"
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl 
-                                       transition-colors whitespace-nowrap shadow-sm hover:shadow-md"
-                            >
-                                <PlusIcon className="h-5 w-5" />
-                                Ajouter Carte
-                            </Link>
+                            {can(user, 'Add_Composants') && (
+                                <Link
+                                    href="/fiber-optic-cards/create"
+                                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
+                                       text-white rounded-lg shadow-sm whitespace-nowrap"
+                                >
+                                    <PlusIcon className="h-4 w-4" />
+                                    Ajouter Carte
+                                </Link>
+                            )}
                         </div>
                     </div>
 
-                    <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="min-w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         {[
@@ -146,50 +152,52 @@ export default function Index({ fiberOpticCards }: Props) {
                                             { key: 'fiber_type', label: 'Type Fibre', sortable: true },
                                             { key: 'speed', label: 'Vitesse', sortable: true },
                                             { key: 'power_rating', label: 'Puissance', sortable: true },
-                                            { key: 'actions', label: 'Actions', sortable: false }
                                         ].map((header) => (
                                             <th 
                                                 key={header.key}
-                                                className="px-6 py-4 text-left text-sm font-semibold text-gray-700"
+                                                className="px-4 py-2 text-left text-xs font-semibold text-gray-700"
                                                 onClick={() => header.sortable && handleSort(header.key as keyof FiberOpticCard)}
                                             >
                                                 <div className="flex items-center group">
                                                     {header.label}
                                                     {header.sortable && (
-                                                        <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <span className="ml-1 opacity-50 group-hover:opacity-100 transition-opacity">
                                                             {getSortIcon(header.key as keyof FiberOpticCard)}
                                                         </span>
                                                     )}
                                                 </div>
                                             </th>
                                         ))}
+                                        {(can(user, 'Delete_Composants') || can(user, 'Edit_Composants') || can(user, 'View_Composants')) && (
+                                            <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {currentItems.map((card) => (
                                         <tr key={card.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-2">
                                                 {card.image ? (
                                                     <img 
                                                         src={`/storage/${card.image.url}`}
                                                         alt={card.name}
-                                                        className="w-12 h-12 object-cover rounded-lg border-2 border-gray-200"
+                                                        className="w-8 h-8 object-cover rounded border border-gray-200"
                                                     />
                                                 ) : (
-                                                    <div className="w-12 h-12 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                                                        <span className="text-xs text-gray-400">N/A</span>
+                                                    <div className="w-8 h-8 rounded bg-gray-100 border border-dashed border-gray-300 flex items-center justify-center">
+                                                        <span className="text-[10px] text-gray-400">N/A</span>
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{card.name}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{card.brand.name}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                            <td className="px-4 py-2 text-sm text-gray-900">{card.name}</td>
+                                            <td className="px-4 py-2 text-sm text-gray-600">{card.brand.name}</td>
+                                            <td className="px-4 py-2 text-sm text-gray-600">
                                                 {card.servers.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-1.5 max-w-[200px]">
+                                                    <div className="flex flex-wrap gap-1 max-w-[200px]">
                                                         {card.servers.map(server => (
                                                             <span 
                                                                 key={server.id} 
-                                                                className="px-2.5 py-1 bg-blue-50 rounded-2xl text-xs text-blue-700 border border-blue-100"
+                                                                className="px-2 py-0.5 bg-blue-50 rounded-lg text-xs text-blue-700 border border-blue-100"
                                                             >
                                                                 {server.name}
                                                             </span>
@@ -199,30 +207,36 @@ export default function Index({ fiberOpticCards }: Props) {
                                                     <span className="text-gray-400">-</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-blue-600 font-medium">{card.price} DH</td>
-                                            <td className="px-6 py-4 text-sm text-gray-700 uppercase font-medium">{card.fiber_type}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-700">{card.speed} Mbps</td>
-                                            <td className="px-6 py-4 text-sm text-gray-700">{card.power_rating} W</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex gap-3">
-                                                    <Link
-                                                        href={`/fiber-optic-cards/${card.id}/edit`}
-                                                        className="text-blue-600 hover:text-blue-700 transition-colors p-1.5 hover:bg-blue-50 rounded-lg"
-                                                    >
-                                                        <PencilIcon className="h-5 w-5" />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(card.id)}
-                                                        className="text-red-600 hover:text-red-700 transition-colors p-1.5 hover:bg-red-50 rounded-lg"
-                                                    >
-                                                        <TrashIcon className="h-5 w-5" />
-                                                    </button>
-                                                    <Link
-                                                        href={`/fiber-optic-cards/${card.id}`}
-                                                        className="text-green-600 hover:text-green-700 transition-colors p-1.5 hover:bg-green-50 rounded-lg"
-                                                    >
-                                                        <EyeIcon className="h-5 w-5" />
-                                                    </Link>
+                                            <td className="px-4 py-2 text-sm text-blue-600">{card.price} DH</td>
+                                            <td className="px-4 py-2 text-sm text-gray-700 uppercase">{card.fiber_type}</td>
+                                            <td className="px-4 py-2 text-sm text-gray-700">{card.speed} Mbps</td>
+                                            <td className="px-4 py-2 text-sm text-gray-700">{card.power_rating} W</td>
+                                            <td className="px-4 py-2">
+                                                <div className="flex gap-2">
+                                                    {can(user, 'View_Composants') && (
+                                                        <Link
+                                                            href={`/fiber-optic-cards/${card.id}`}
+                                                            className="text-green-600 hover:text-green-700 transition-colors p-1 hover:bg-green-50 rounded"
+                                                        >
+                                                            <EyeIcon className="h-4 w-4" />
+                                                        </Link>
+                                                    )}
+                                                    {can(user, 'Edit_Composants') && (
+                                                        <Link
+                                                            href={`/fiber-optic-cards/${card.id}/edit`}
+                                                            className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
+                                                        >
+                                                            <PencilIcon className="h-4 w-4" />
+                                                        </Link>
+                                                    )}
+                                                    {can(user, 'Delete_Composants') && (
+                                                        <button
+                                                            onClick={() => handleDelete(card.id)}
+                                                            className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                                                        >
+                                                            <TrashIcon className="h-4 w-4" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -232,35 +246,32 @@ export default function Index({ fiberOpticCards }: Props) {
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t border-gray-200">
-                            <div className="mb-4 sm:mb-0 text-sm text-gray-600">
+                        <div className="flex flex-col sm:flex-row justify-between items-center p-3 border-t border-gray-200 text-xs">
+                            <div className="mb-2 sm:mb-0 text-gray-600">
                                 {sortedCards.length} résultat{sortedCards.length > 1 && 's'} • Page {currentPage} sur {totalPages}
                             </div>
-                            
-                            <div className="flex items-center gap-4">
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-3.5 py-1.5 rounded-2xl text-gray-700 hover:bg-gray-100 
-                                               disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
-                                    >
-                                        ← Précédent
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-3.5 py-1.5 rounded-2xl text-gray-700 hover:bg-gray-100 
-                                               disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
-                                    >
-                                        Suivant →
-                                    </button>
-                                </div>
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-2 py-1 rounded-lg text-gray-600 hover:bg-gray-100 
+                                           disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
+                                >
+                                    ←
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-2 py-1 rounded-lg text-gray-600 hover:bg-gray-100 
+                                           disabled:opacity-40 disabled:cursor-not-allowed transition-all border border-gray-300"
+                                >
+                                    →
+                                </button>
                             </div>
                         </div>
 
                         {filteredCards.length === 0 && (
-                            <div className="p-6 text-center text-gray-500 text-sm">
+                            <div className="p-4 text-center text-gray-500 text-xs">
                                 Aucune carte optique trouvée
                             </div>
                         )}
@@ -271,6 +282,7 @@ export default function Index({ fiberOpticCards }: Props) {
     );
 }
 
+// Icônes restent identiques
 function EyeIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24">

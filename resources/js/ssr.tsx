@@ -12,11 +12,21 @@ createServer((page) =>
         page,
         render: ReactDOMServer.renderToString,
         title: (title) => `${title} - ${appName}`,
-        resolve: (name) =>
-            resolvePageComponent(
-                `./Pages/${name}.tsx`,
-                import.meta.glob('./Pages/**/*.tsx'),
-            ),
+        resolve: async (name) => {
+            const pages = import.meta.glob('./Pages/**/*.{tsx,jsx,js}');
+
+            // Ajoute le .tsx si absent
+            const pagePath = pages[`./Pages/${name}`]
+                ? `./Pages/${name}`
+                : `./Pages/${name}.tsx`;
+
+            if (!pages[pagePath]) {
+                throw new Error(`Page not found: ${pagePath}`);
+            }
+
+            return await pages[pagePath]();
+        }
+        ,
         setup: ({ App, props }) => {
             /* eslint-disable */
             // @ts-expect-error

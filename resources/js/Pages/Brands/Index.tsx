@@ -2,6 +2,8 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { Layout } from '@/Layouts/layout';
 import toast from 'react-hot-toast';
+import { PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import { can } from '@/helpers';
 
 interface Brand {
     id: number;
@@ -15,84 +17,136 @@ interface Props {
 export default function Index({ brands }: Props) {
     const { delete: destroy } = useForm();
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
     const { flash } = usePage().props;
-
+    usePage().props.auth.user
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);
         if (flash?.error) toast.error(flash.error);
     }, [flash]);
 
-    const filteredBrands = brands.filter((brand) =>
-        brand.name.includes(searchTerm)
-    );
-
     const handleDelete = (id: number) => {
-            destroy(`/brands/${id}`, {
-                onSuccess: () => toast.success('Marque supprimée avec succès'),
-                onError: () => toast.error('Erreur lors de la suppression')
-            });
+        destroy(`/brands/${id}`, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Marque supprimée avec succès'),
+            onError: () => toast.error('Erreur lors de la suppression'),
+        });
     };
 
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value.toLowerCase());
+        setCurrentPage(1);
+    };
+
+    const filteredBrands = brands.filter(brand =>
+        brand.name.toLowerCase().includes(searchTerm)
+    );
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredBrands.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredBrands.length / itemsPerPage);
+    const { auth } = usePage().props;
+    const user = auth.user;
     return (
         <Layout>
-            <div className="p-6 max-w-screen-xl mx-auto">
-                <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-                    <div className="p-6">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                            <div>
-                                <h1 className="text-2xl font-semibold text-gray-900">Gestion des Marques</h1>
-                                <p className="text-gray-600 mt-1">Liste des marques enregistrées</p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center mb-4 gap-4">
-                            <Link
-                                href="/brands/create"
-                                className="text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 
-                                       focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                            >
-                                Ajouter une Marque
-                            </Link>
-                            <div className="relative flex-1 max-w-md">
+            <div className="p-10 min-h-screen bg-white rounded-xl text-sm leading-tight w-full">
+                <div className="w-full">
+                    <div className="flex flex-col md:flex-row justify-between mb-4 gap-2">
+                        <h1 className="text-lg font-semibold text-gray-900">
+                            Gestion des Marques
+                        </h1>
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <div className="relative w-full sm:w-auto flex-1">
                                 <input
                                     type="text"
-                                    className="w-full px-4 pl-10 py-2 border border-gray-300 rounded-lg"
-                                    placeholder="Rechercher des marques..."
+                                    className="w-full pl-3 pr-9 py-1.5 border border-gray-300 rounded-lg text-sm 
+                                        focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30
+                                        placeholder-gray-400 bg-white"
+                                    placeholder="Rechercher..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={handleSearchChange}
                                 />
-                                <SearchIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
+                                <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
+
+                            {can(user, 'Add_Brands') && <Link
+                                href="/brands/create"
+                                className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
+                                    text-white rounded-lg shadow-sm"
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                                Ajouter
+                            </Link>}
+                        </div>
+                    </div>
+
+                    <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm w-full">
+                        <div className="overflow-x-auto w-full">
+                            <table className="min-w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Nom</th>
+                                        {(can(user, 'Delete_Brands') || can(user, 'Edit_Brands')) && (
+                                            <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
+                                        )}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {currentItems.map((brand) => (
+                                        <tr key={brand.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-4 py-2 text-xs text-gray-900">{brand.name}</td>
+                                            <td className="px-4 py-2">
+                                                <div className="flex gap-2">
+                                                    {can(user, 'Edit_Brands') && <Link
+                                                        href={`/brands/${brand.id}/edit`}
+                                                        className="text-blue-600 hover:text-blue-700 transition p-1 hover:bg-blue-50 rounded"
+                                                    >
+                                                        <PencilIcon className="h-4 w-4" />
+                                                    </Link>}
+                                                    {can(user, 'Delete_Brands') &&
+                                                        <button
+                                                            onClick={() => handleDelete(brand.id)}
+                                                            className="text-red-600 hover:text-red-700 transition p-1 hover:bg-red-50 rounded"
+                                                        >
+                                                            <TrashIcon className="h-4 w-4" />
+                                                        </button>}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                            {filteredBrands.map((brand) => (
-                                <div key={brand.id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="text-lg font-medium text-gray-900">{brand.name}</h3>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Link
-                                                href={`/brands/${brand.id}/edit`}
-                                                className="text-blue-600 hover:text-blue-700 p-1.5 hover:bg-blue-50 rounded-lg"
-                                            >
-                                                <PencilIcon className="h-5 w-5" />
-                                            </Link>
-                                            <button
-                                                onClick={() => handleDelete(brand.id)}
-                                                className="text-red-600 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg"
-                                            >
-                                                <TrashIcon className="h-5 w-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                        {/* Pagination */}
+                        <div className="flex flex-col sm:flex-row justify-between items-center p-3 border-t border-gray-200 text-xs">
+                            <div className="mb-2 sm:mb-0 text-gray-600">
+                                {filteredBrands.length} résultat{filteredBrands.length > 1 && 's'} • Page {currentPage} sur {totalPages}
+                            </div>
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-2 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 
+                                        disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    ←
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-2 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 
+                                        disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    →
+                                </button>
+                            </div>
                         </div>
 
                         {filteredBrands.length === 0 && (
-                            <div className="p-6 text-center text-gray-500">
+                            <div className="p-4 text-center text-gray-500 text-xs">
                                 Aucune marque trouvée
                             </div>
                         )}
@@ -103,27 +157,10 @@ export default function Index({ brands }: Props) {
     );
 }
 
-// Icônes SVG
 function SearchIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-    )
-}
-
-function PencilIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-        </svg>
-    )
-}
-
-function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-    )
+    );
 }

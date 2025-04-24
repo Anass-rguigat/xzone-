@@ -1,5 +1,5 @@
 "use client"
-
+import { Link } from '@inertiajs/react';
 import { ChevronRight, type LucideIcon } from "lucide-react"
 import {
   Collapsible,
@@ -21,52 +21,47 @@ import { useState } from "react"
 // Composant récursif pour gérer l'affichage des sous-items
 function RenderSubItems({
   items,
-  isSubItem = false,
 }: {
-  items?: { title: string; url: string; items?: any[] }[];
-  isSubItem?: boolean;
+  items?: { title: string; url: string; items?: any[]; isActive?: boolean }[];
 }) {
-  const [openItems, setOpenItems] = useState<string[]>([])
-
-  // Fonction pour gérer l'ouverture/fermeture des sous-items
-  const toggleSubItem = (title: string) => {
-    setOpenItems((prevOpenItems) =>
-      prevOpenItems.includes(title)
-        ? prevOpenItems.filter((item) => item !== title)
-        : [...prevOpenItems, title]
-    )
-  }
-
   return (
     <>
-      {items?.map((subItem) => (
-        <SidebarMenuSubItem key={subItem.title}>
-          <SidebarMenuSubButton
-            asChild
-            onClick={() => toggleSubItem(subItem.title)} // Ajout de l'événement de clic
-          >
-            <a href={subItem.url}>
-              <span>{subItem.title}</span>
-              {subItem.items && subItem.items.length > 0 && (
-                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-              )}
-            </a>
-          </SidebarMenuSubButton>
-
-          {/* Affichage des sous-items si l'item est ouvert */}
-          {subItem.items && subItem.items.length > 0 && openItems.includes(subItem.title) && (
-            <Collapsible asChild>
-              <SidebarMenuSub>
-                <RenderSubItems items={subItem.items} isSubItem={true} />
-              </SidebarMenuSub>
-            </Collapsible>
-          )}
-        </SidebarMenuSubItem>
-      ))}
+      {items?.map((subItem) => {
+        const hasSubItems = subItem.items && subItem.items.length > 0;
+        return (
+          <SidebarMenuSubItem key={subItem.title}>
+            {hasSubItems ? (
+              <Collapsible
+                defaultOpen={subItem.isActive}
+                className="group/collapsible"
+              >
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center w-full">
+                      <SidebarMenuSubButton>
+                        <span className="text-xs">{subItem.title}</span>
+                      </SidebarMenuSubButton>
+                        <ChevronRight className="w-4 h-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                     
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <RenderSubItems items={subItem.items} />
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
+              <Link href={subItem.url}>
+                  <span className="text-xs">{subItem.title}</span>
+               
+              </Link>
+            )}
+          </SidebarMenuSubItem>
+        );
+      })}
     </>
-  )
+  );
 }
-
 export function NavMain({
   items,
 }: {
@@ -78,52 +73,53 @@ export function NavMain({
     items?: {
       title: string;
       url: string;
-      items?: {
-        title: string;
-        url: string;
-      }[];
-    }[]; 
+      items?: any[];
+    }[];
   }[];
 }) {
-  const [openItems, setOpenItems] = useState<string[]>([])
-
-  // Fonction pour gérer l'ouverture/fermeture des items principaux
-  const toggleItem = (title: string) => {
-    setOpenItems((prevOpenItems) =>
-      prevOpenItems.includes(title)
-        ? prevOpenItems.filter((item) => item !== title)
-        : [...prevOpenItems, title]
-    )
-  }
-
+  if (!items || items.length === 0) return null;
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Platforme</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title} onClick={() => toggleItem(item.title)}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+        {items.map((item) => {
+          const hasSubItems = item.items && item.items.length > 0;
+          return (
+            <SidebarMenuItem key={item.title}>
+              {hasSubItems ? (
+                <Collapsible
+                  defaultOpen={item.isActive}
+                  className="group/collapsible"
+                >
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center w-full">
+                      <SidebarMenuButton tooltip={item.title} >
+                          {item.icon && <item.icon />}
+                          <span className="text-xs">{item.title}</span>
+                      </SidebarMenuButton>
+                      
+                          <ChevronRight className="w-4 h-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                       
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <RenderSubItems items={item.items} />
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
+              ) : (
+                <SidebarMenuButton tooltip={item.title} asChild>
+                  <Link href={item.url}>
+                    {item.icon && <item.icon />}
+                    <span className="text-xs">{item.title}</span>
+                  </Link>
                 </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  <RenderSubItems items={item.items} />
-                </SidebarMenuSub>
-              </CollapsibleContent>
+              )}
             </SidebarMenuItem>
-          </Collapsible>
-        ))}
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

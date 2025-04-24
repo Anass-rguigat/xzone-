@@ -18,4 +18,15 @@ export default defineConfig({
     },
     extensions: ['.tsx', '.ts', '.jsx', '.js'], // Add .jsx here
   },
+  build: {
+    outDir: 'public/build',
+    emptyOutDir: true,
+    ssr: 'resources/js/ssr.tsx', // Specify the SSR entry file here
+    rollupOptions: {
+      output: {
+        format: 'esm',  // This ensures the output is an ES module for SSR
+        dir: 'bootstrap/ssr', // Output location for SSR bundle
+      },
+    },
+  }
 });
