@@ -2,16 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\CableConnector;
 use App\Models\Brand;
 use App\Models\Image;
 use App\Models\Server;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class CableConnectorController extends Controller
 {
+    private function logAudit($event, $cable, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => CableConnector::class,
+            'auditable_id' => $cable->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
     public function index()
     {
         $cables = CableConnector::with(['brand', 'image', 'servers'])->get();
@@ -52,13 +77,17 @@ class CableConnectorController extends Controller
             'price' => $validated['price'],
         ]);
 
+        $this->logAudit('created', $cable, ['new' => $cable->getAttributes()]);
+
         if (!empty($validated['server_ids'])) {
             $cable->servers()->attach($validated['server_ids']);
+            $this->logAudit('servers_attached', $cable, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('cable_connectors', 'public');
             $cable->image()->create(['url' => $path]);
+            $this->logAudit('image_uploaded', $cable, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('cable-connectors.index');
@@ -78,6 +107,9 @@ class CableConnectorController extends Controller
 
     public function update(Request $request, CableConnector $cableConnector)
     {
+        $oldAttributes = $cableConnector->getAttributes();
+        $oldServers = $cableConnector->servers->pluck('id')->toArray();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|max:255',
@@ -92,18 +124,36 @@ class CableConnectorController extends Controller
 
         $cableConnector->update([
             'name' => $validated['name'],
-            'type' => $validated['type'] ?? $cableConnector->type,
+            'type' => $validated['type'],
             'brand_id' => $validated['brand_id'],
-            'length' => $validated['length'] ?? $cableConnector->length,
-            'specifications' => $validated['specifications'] ?? $cableConnector->specifications,
-            'price' => $validated['price'] ?? $cableConnector->price,
+            'length' => $validated['length'],
+            'specifications' => $validated['specifications'],
+            'price' => $validated['price'],
+        ]);
+
+        $this->logAudit('updated', $cableConnector, [
+            'old' => $oldAttributes,
+            'new' => $cableConnector->getChanges()
         ]);
 
         if (isset($validated['server_ids'])) {
             $cableConnector->servers()->sync($validated['server_ids']);
+            
+            $added = array_diff($validated['server_ids'], $oldServers);
+            $removed = array_diff($oldServers, $validated['server_ids']);
+
+            if (!empty($added)) {
+                $this->logAudit('servers_attached', $cableConnector, ['new' => $added]);
+            }
+
+            if (!empty($removed)) {
+                $this->logAudit('servers_detached', $cableConnector, ['old' => $removed]);
+            }
         }
 
         if ($request->hasFile('image')) {
+            $oldImage = $cableConnector->image?->url;
+
             if ($cableConnector->image) {
                 Storage::disk('public')->delete($cableConnector->image->url);
                 $cableConnector->image()->delete();
@@ -111,6 +161,11 @@ class CableConnectorController extends Controller
 
             $path = $request->file('image')->store('cable_connectors', 'public');
             $cableConnector->image()->create(['url' => $path]);
+            
+            $this->logAudit('image_updated', $cableConnector, [
+                'old' => ['image' => $oldImage],
+                'new' => ['image' => $path]
+            ]);
         }
 
         return redirect()->route('cable-connectors.index');
@@ -124,13 +179,19 @@ class CableConnectorController extends Controller
 
     public function destroy(CableConnector $cableConnector)
     {
+        $oldAttributes = $cableConnector->getAttributes();
+        $oldImage = $cableConnector->image?->url;
+
         if ($cableConnector->image) {
             Storage::disk('public')->delete($cableConnector->image->url);
             $cableConnector->image()->delete();
+            $this->logAudit('image_deleted', $cableConnector, ['old' => ['image' => $oldImage]]);
         }
 
         $cableConnector->servers()->detach();
         $cableConnector->delete();
+
+        $this->logAudit('deleted', $cableConnector, ['old' => $oldAttributes]);
 
         return redirect()->route('cable-connectors.index');
     }

@@ -3,17 +3,42 @@
 namespace App\Http\Controllers;
 
 use App\Models\GraphicCard;
+use App\Models\AuditLog;
 use App\Models\Image;
 use App\Models\Server;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class GraphicCardController extends Controller
 {
+    private function logAudit($event, $graphicCard, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => GraphicCard::class,
+            'auditable_id' => $graphicCard->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
     public function index()
     {
-        $graphicCards = GraphicCard::with(['brand', 'image', 'servers'])->get(); // Load related servers
+        $graphicCards = GraphicCard::with(['brand', 'image', 'servers'])->get();
         return Inertia::render('GraphicCards/Index', ['graphicCards' => $graphicCards]);
     }
 
@@ -41,7 +66,6 @@ class GraphicCardController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-
         $graphicCard = GraphicCard::create([
             'name' => $validated['name'],
             'brand_id' => $validated['brand_id'],
@@ -51,12 +75,17 @@ class GraphicCardController extends Controller
             'price' => $validated['price'],
         ]);
 
+        $this->logAudit('created', $graphicCard, ['new' => $graphicCard->getAttributes()]);
+
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $graphicCard->servers()->attach($validated['server_ids']);
+            $this->logAudit('servers_attached', $graphicCard, ['new' => $validated['server_ids']]);
         }
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('graphic_cards', 'public');
             $graphicCard->image()->create(['url' => $path]);
+            $this->logAudit('image_uploaded', $graphicCard, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('graphic-cards.index');
@@ -74,9 +103,11 @@ class GraphicCardController extends Controller
         ]);
     }
 
-
     public function update(Request $request, GraphicCard $graphicCard)
     {
+        $oldAttributes = $graphicCard->getAttributes();
+        $oldServers = $graphicCard->servers->pluck('id')->toArray();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'brand_id' => 'required|exists:brands,id',
@@ -98,19 +129,41 @@ class GraphicCardController extends Controller
             'brand_id' => $validated['brand_id'],
         ]);
 
+        $this->logAudit('updated', $graphicCard, [
+            'old' => $oldAttributes,
+            'new' => $graphicCard->getChanges()
+        ]);
+
         if (isset($validated['server_ids'])) {
             $graphicCard->servers()->sync($validated['server_ids']);
+            
+            $added = array_diff($validated['server_ids'], $oldServers);
+            $removed = array_diff($oldServers, $validated['server_ids']);
+
+            if (!empty($added)) {
+                $this->logAudit('servers_attached', $graphicCard, ['new' => $added]);
+            }
+
+            if (!empty($removed)) {
+                $this->logAudit('servers_detached', $graphicCard, ['old' => $removed]);
+            }
         }
 
         if ($request->hasFile('image')) {
+            $oldImage = $graphicCard->image?->url;
+
             if ($graphicCard->image) {
                 Storage::disk('public')->delete($graphicCard->image->url);
                 $graphicCard->image()->delete();
             }
 
             $path = $request->file('image')->store('graphic_cards', 'public');
-
             $graphicCard->image()->create(['url' => $path]);
+            
+            $this->logAudit('image_updated', $graphicCard, [
+                'old' => ['image' => $oldImage],
+                'new' => ['image' => $path]
+            ]);
         }
 
         return redirect()->route('graphic-cards.index');
@@ -119,7 +172,6 @@ class GraphicCardController extends Controller
     public function show(GraphicCard $graphicCard)
     {
         $graphicCard->load('brand', 'image', 'servers');
-
         return Inertia::render('GraphicCards/Show', [
             'graphicCard' => $graphicCard,
         ]);
@@ -127,14 +179,19 @@ class GraphicCardController extends Controller
 
     public function destroy(GraphicCard $graphicCard)
     {
+        $oldAttributes = $graphicCard->getAttributes();
+        $oldImage = $graphicCard->image?->url;
+
         if ($graphicCard->image) {
             Storage::disk('public')->delete($graphicCard->image->url);
             $graphicCard->image()->delete();
+            $this->logAudit('image_deleted', $graphicCard, ['old' => ['image' => $oldImage]]);
         }
 
         $graphicCard->servers()->detach();
-
         $graphicCard->delete();
+
+        $this->logAudit('deleted', $graphicCard, ['old' => $oldAttributes]);
 
         return redirect()->route('graphic-cards.index');
     }

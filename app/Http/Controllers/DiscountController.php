@@ -2,16 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Discount;
 use App\Models\Server;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class DiscountController extends Controller
 {
+    private function logAudit($event, $discount, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => Discount::class,
+            'auditable_id' => $discount->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
+    private function getServerIds(Discount $discount)
+    {
+        return $discount->servers->pluck('id')->toArray();
+    }
+
+
     public function index()
     {
         $discounts = Discount::has('servers')->get();
@@ -89,6 +120,10 @@ class DiscountController extends Controller
                 $this->updateServerPrice($server, $discount);
             }
 
+            $this->logAudit('created', $discount, [
+                'new' => array_merge($discount->getAttributes(), ['servers' => $this->getServerIds($discount)])
+            ]);
+
             return redirect()->route('discounts.index')->with('success', 'Discount created successfully');
         } catch (ValidationException $e) {
             return redirect()
@@ -123,6 +158,11 @@ class DiscountController extends Controller
     public function update(Request $request, Discount $discount)
     {
         try {
+
+            $oldAttributes = $discount->getAttributes();
+            $oldServers = $this->getServerIds($discount);
+
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'discount_type' => 'required|in:percentage,fixed',
@@ -179,6 +219,11 @@ class DiscountController extends Controller
 
             DB::commit();
 
+            $this->logAudit('updated', $discount, [
+                'old' => array_merge($oldAttributes, ['servers' => $oldServers]),
+                'new' => array_merge($discount->getChanges(), ['servers' => $this->getServerIds($discount)])
+            ]);
+
             return redirect()->route('discounts.index')->with('success', 'Réduction mise à jour avec succès');
         } catch (ValidationException $e) {
             DB::rollBack();
@@ -212,6 +257,9 @@ class DiscountController extends Controller
 
     public function destroy(Discount $discount)
     {
+        $oldAttributes = $discount->getAttributes();
+        $oldServers = $this->getServerIds($discount);
+
         foreach ($discount->servers as $server) {
             $this->revertServerPrice($server, $discount);
         }
@@ -219,6 +267,10 @@ class DiscountController extends Controller
         $discount->servers()->detach();
 
         $discount->delete();
+
+        $this->logAudit('deleted', $discount, [
+            'old' => array_merge($oldAttributes, ['servers' => $oldServers])
+        ]);
 
         return redirect()->route('discounts.index')->with('success', 'Discount deleted and prices reverted successfully');
     }
@@ -258,6 +310,9 @@ class DiscountController extends Controller
         $expiredDiscounts = Discount::where('end_date', '<', Carbon::now())->get();
 
         foreach ($expiredDiscounts as $discount) {
+            $oldAttributes = $discount->getAttributes();
+            $oldServers = $this->getServerIds($discount);
+
             $discount->servers()->each(function ($server) use ($discount) {
                 $this->revertServerPrice($server, $discount);
 
@@ -265,6 +320,10 @@ class DiscountController extends Controller
             });
 
             $discount->delete();
+
+            $this->logAudit('expired_deleted', $discount, [
+                'old' => array_merge($oldAttributes, ['servers' => $oldServers])
+            ]);
         }
 
         return response()->json(['message' => 'Expired discounts have been deleted and server prices restored.'], 200);

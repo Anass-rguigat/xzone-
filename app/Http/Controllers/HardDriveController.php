@@ -3,17 +3,42 @@
 namespace App\Http\Controllers;
 
 use App\Models\HardDrive;
+use App\Models\AuditLog;
 use App\Models\Image;
 use App\Models\Server;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class HardDriveController extends Controller
 {
+    private function logAudit($event, $hardDrive, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => HardDrive::class,
+            'auditable_id' => $hardDrive->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
     public function index()
     {
-        $hardDrives = HardDrive::with(['brand', 'image', 'servers'])->get(); // Load servers as well
+        $hardDrives = HardDrive::with(['brand', 'image', 'servers'])->get();
         return Inertia::render('HardDrives/Index', ['hardDrives' => $hardDrives]);
     }
 
@@ -52,13 +77,17 @@ class HardDriveController extends Controller
             'stock' => $validated['stock'],
         ]);
 
+        $this->logAudit('created', $hardDrive, ['new' => $hardDrive->getAttributes()]);
+
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $hardDrive->servers()->attach($validated['server_ids']);
+            $this->logAudit('servers_attached', $hardDrive, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('hard_drives', 'public');
             $hardDrive->image()->create(['url' => $path]);
+            $this->logAudit('image_uploaded', $hardDrive, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('hard-drives.index');
@@ -78,6 +107,9 @@ class HardDriveController extends Controller
 
     public function update(Request $request, HardDrive $hardDrive)
     {
+        $oldAttributes = $hardDrive->getAttributes();
+        $oldServers = $hardDrive->servers->pluck('id')->toArray();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'brand_id' => 'required|exists:brands,id',
@@ -101,19 +133,41 @@ class HardDriveController extends Controller
             'stock' => $validated['stock'] ?? $hardDrive->stock,
         ]);
 
+        $this->logAudit('updated', $hardDrive, [
+            'old' => $oldAttributes,
+            'new' => $hardDrive->getChanges()
+        ]);
+
         if (isset($validated['server_ids'])) {
             $hardDrive->servers()->sync($validated['server_ids']);
+            
+            $added = array_diff($validated['server_ids'], $oldServers);
+            $removed = array_diff($oldServers, $validated['server_ids']);
+
+            if (!empty($added)) {
+                $this->logAudit('servers_attached', $hardDrive, ['new' => $added]);
+            }
+
+            if (!empty($removed)) {
+                $this->logAudit('servers_detached', $hardDrive, ['old' => $removed]);
+            }
         }
 
         if ($request->hasFile('image')) {
+            $oldImage = $hardDrive->image?->url;
+
             if ($hardDrive->image) {
                 Storage::disk('public')->delete($hardDrive->image->url);
                 $hardDrive->image()->delete();
             }
 
             $path = $request->file('image')->store('hard_drives', 'public');
-
             $hardDrive->image()->create(['url' => $path]);
+            
+            $this->logAudit('image_updated', $hardDrive, [
+                'old' => ['image' => $oldImage],
+                'new' => ['image' => $path]
+            ]);
         }
 
         return redirect()->route('hard-drives.index');
@@ -122,7 +176,6 @@ class HardDriveController extends Controller
     public function show(HardDrive $hardDrive)
     {
         $hardDrive->load('brand', 'image', 'servers');
-
         return Inertia::render('HardDrives/Show', [
             'hardDrive' => $hardDrive,
         ]);
@@ -130,14 +183,19 @@ class HardDriveController extends Controller
 
     public function destroy(HardDrive $hardDrive)
     {
+        $oldAttributes = $hardDrive->getAttributes();
+        $oldImage = $hardDrive->image?->url;
+
         if ($hardDrive->image) {
             Storage::disk('public')->delete($hardDrive->image->url);
             $hardDrive->image()->delete();
+            $this->logAudit('image_deleted', $hardDrive, ['old' => ['image' => $oldImage]]);
         }
 
         $hardDrive->servers()->detach();
-
         $hardDrive->delete();
+
+        $this->logAudit('deleted', $hardDrive, ['old' => $oldAttributes]);
 
         return redirect()->route('hard-drives.index');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Battery;
 use App\Models\CableConnector;
 use App\Models\Chassis;
@@ -20,6 +21,7 @@ use App\Models\Server;
 use App\Models\StockMovement;
 use App\Models\StockLevel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -28,6 +30,29 @@ use Illuminate\Validation\ValidationException;
 
 class StockMovementController extends Controller
 {
+    private function logAudit($event, $movement, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => StockMovement::class,
+            'auditable_id' => $movement->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
     public function index()
     {
         $movements = StockMovement::with(['component', 'supplier'])
@@ -64,6 +89,8 @@ class StockMovementController extends Controller
 
         try {
         $movement = StockMovement::create($validated);
+        $this->logAudit('created', $movement, ['new' => $movement->getAttributes()]);
+
         $stockLevel = StockLevel::where('component_id', $validated['component_id'])
             ->where('component_type', $validated['component_type'])
             ->first();
@@ -138,7 +165,7 @@ class StockMovementController extends Controller
 
     public function update(Request $request, StockMovement $stockMovement)
     {
-
+        $oldAttributes = $stockMovement->getAttributes();
         $validated = $request->validate([
             'component_id'   => 'required|integer',
             'component_type' => 'required|string',
@@ -156,13 +183,7 @@ class StockMovementController extends Controller
             $previousComponentId = $stockMovement->component_id;
             $previousComponentType = $stockMovement->component_type;
 
-            Log::info('Ancien mouvement:', [
-                'id' => $stockMovement->id,
-                'component_id' => $previousComponentId,
-                'component_type' => $previousComponentType,
-                'quantity' => $previousQuantity,
-                'type' => $previousType,
-            ]);
+            
 
             $oldStockLevel = StockLevel::where('component_id', $previousComponentId)
                 ->where('component_type', $previousComponentType)
@@ -187,6 +208,10 @@ class StockMovementController extends Controller
             }
 
             $stockMovement->update($validated);
+            $this->logAudit('updated', $stockMovement, [
+                'old' => $oldAttributes,
+                'new' => $stockMovement->getChanges()
+            ]);
             Log::info('Mouvement mis à jour:', $stockMovement->toArray());
 
             if ($validated['movement_type'] === 'in') {
@@ -212,6 +237,7 @@ class StockMovementController extends Controller
 
     public function destroy(StockMovement $stockMovement)
     {
+        $oldAttributes = $stockMovement->getAttributes();
         DB::beginTransaction();
         try {
 
@@ -242,6 +268,7 @@ class StockMovementController extends Controller
 
             // Suppression du mouvement
             $stockMovement->delete();
+            $this->logAudit('deleted', $stockMovement, ['old' => $oldAttributes]);
 
             DB::commit();
             return redirect()->route('stock-movements.index')->with('success', 'Mouvement supprimé avec succès');

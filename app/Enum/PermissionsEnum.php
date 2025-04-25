@@ -54,6 +54,10 @@ enum PermissionsEnum: string
     case ListStock_Levels = 'List_Stock_Levels';
     case ShowStock_Levels = 'Show_Stock_Levels';
 
+    case Affiche_Connexions_Audits = 'Affiche_Connexions_Audits';
+
+    case Affiche_logs_Audits = 'Affiche_logs_Audits';
+
     case ManageUsers = 'manage_users';
 
     public static function values(): array

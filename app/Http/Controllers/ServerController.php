@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Battery;
 use App\Models\Server;
 use App\Models\Ram;
@@ -19,11 +20,35 @@ use App\Models\ExpansionCard;
 use App\Models\Brand;
 use App\Models\CableConnector;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ServerController extends Controller
 {
+    private function logAudit($event, $server, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => Server::class,
+            'auditable_id' => $server->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
     public function index()
     {
         $servers = Server::with([
@@ -143,6 +168,7 @@ class ServerController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+
         $server = Server::create([
             'name' => $validated['name'],
             'brand_id' => $validated['brand_id'],
@@ -155,26 +181,35 @@ class ServerController extends Controller
             'rack_mountable' => $validated['rack_mountable'],
             'form_factor' => $validated['form_factor'],
         ]);
+        $this->logAudit('created', $server, ['new' => $server->getAttributes()]);
 
-        $server->rams()->attach($validated['ram_ids'] ?? []);
-        $server->hardDrives()->attach($validated['hard_drive_ids'] ?? []);
-        $server->processors()->attach($validated['processor_ids'] ?? []);
-        $server->powerSupplies()->attach($validated['power_supply_ids'] ?? []);
-        $server->motherboards()->attach($validated['motherboard_ids'] ?? []);
-        $server->networkCards()->attach($validated['network_card_ids'] ?? []);
-        $server->raidControllers()->attach($validated['raid_controller_ids'] ?? []);
-        $server->coolingSolutions()->attach($validated['cooling_solution_ids'] ?? []);
-        $server->chassis()->attach($validated['chassis_ids'] ?? []);
-        $server->graphicCards()->attach($validated['graphic_card_ids'] ?? []);
-        $server->fiberOpticCards()->attach($validated['fiber_optic_card_ids'] ?? []);
-        $server->expansionCards()->attach($validated['expansion_card_ids'] ?? []);
 
-        $server->batteries()->attach($validated['battery_ids'] ?? []);
-        $server->cable_connectors()->attach($validated['cable_connector_ids'] ?? []);
-
+        $relationships = [
+            'ram_ids' => 'rams',
+            'hard_drive_ids' => 'hardDrives',
+            'processor_ids' => 'processors',
+            'power_supply_ids' => 'powerSupplies',
+            'motherboard_ids' => 'motherboards',
+            'network_card_ids' => 'networkCards',
+            'raid_controller_ids' => 'raidControllers',
+            'cooling_solution_ids' => 'coolingSolutions',
+            'chassis_ids' => 'chassis',
+            'graphic_card_ids' => 'graphicCards',
+            'fiber_optic_card_ids' => 'fiberOpticCards',
+            'expansion_card_ids' => 'expansionCards',
+            'battery_ids' => 'batteries',
+            'cable_connector_ids' => 'cable_connectors',
+        ];
+        foreach ($relationships as $key => $relation) {
+            if (!empty($validated[$key])) {
+                $server->$relation()->attach($validated[$key] ?? []);
+                $this->logAudit($relation . '_attached', $server, ['new' => $validated[$key]]);
+            }
+        }
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('servers', 'public');
             $server->image()->create(['url' => $path]);
+            $this->logAudit('image_uploaded', $server, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('servers.index');
@@ -246,6 +281,30 @@ class ServerController extends Controller
 
     public function update(Request $request, Server $server)
     {
+        $oldAttributes = $server->getAttributes();
+        $oldRelations = [];
+        $relationships = [
+            'rams',
+            'hardDrives',
+            'processors',
+            'powerSupplies',
+            'motherboards',
+            'networkCards',
+            'raidControllers',
+            'coolingSolutions',
+            'chassis',
+            'graphicCards',
+            'fiberOpticCards',
+            'expansionCards',
+            'batteries',
+            'cable_connectors',
+        ];
+
+        // Capture old relationship IDs
+        foreach ($relationships as $relation) {
+            $oldRelations[$relation] = $server->$relation->pluck('id')->toArray();
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'brand_id' => 'required|exists:brands,id',
@@ -288,35 +347,61 @@ class ServerController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $server->update([
-            'name' => $validated['name'],
-            'brand_id' => $validated['brand_id'],
-            'price' => $validated['price'],
-            'model' => $validated['model'],
-            'cpu_socket' => $validated['cpu_socket'],
-            'ram_slots' => $validated['ram_slots'],
-            'storage_slots' => $validated['storage_slots'],
-            'power_supply_type' => $validated['power_supply_type'],
-            'rack_mountable' => $validated['rack_mountable'],
-            'form_factor' => $validated['form_factor'],
+        // Update server attributes
+        $server->update($validated);
+        $this->logAudit('updated', $server, [
+            'old' => $oldAttributes,
+            'new' => $server->getChanges()
         ]);
 
-        $server->rams()->sync($validated['ram_ids'] ?? []);
-        $server->hardDrives()->sync($validated['hard_drive_ids'] ?? []);
-        $server->processors()->sync($validated['processor_ids'] ?? []);
-        $server->powerSupplies()->sync($validated['power_supply_ids'] ?? []);
-        $server->motherboards()->sync($validated['motherboard_ids'] ?? []);
-        $server->networkCards()->sync($validated['network_card_ids'] ?? []);
-        $server->raidControllers()->sync($validated['raid_controller_ids'] ?? []);
-        $server->coolingSolutions()->sync($validated['cooling_solution_ids'] ?? []);
-        $server->chassis()->sync($validated['chassis_ids'] ?? []);
-        $server->graphicCards()->sync($validated['graphic_card_ids'] ?? []);
-        $server->fiberOpticCards()->sync($validated['fiber_optic_card_ids'] ?? []);
-        $server->expansionCards()->sync($validated['expansion_card_ids'] ?? []);
-        $server->batteries()->sync($validated['battery_ids'] ?? []);
-        $server->cable_connectors()->sync($validated['cable_connector_ids'] ?? []);
+        // Define relationship mapping
+        $relationMap = [
+            'ram_ids' => 'rams',
+            'hard_drive_ids' => 'hardDrives',
+            'processor_ids' => 'processors',
+            'power_supply_ids' => 'powerSupplies',
+            'motherboard_ids' => 'motherboards',
+            'network_card_ids' => 'networkCards',
+            'raid_controller_ids' => 'raidControllers',
+            'cooling_solution_ids' => 'coolingSolutions',
+            'chassis_ids' => 'chassis',
+            'graphic_card_ids' => 'graphicCards',
+            'fiber_optic_card_ids' => 'fiberOpticCards',
+            'expansion_card_ids' => 'expansionCards',
+            'battery_ids' => 'batteries',
+            'cable_connector_ids' => 'cable_connectors',
+        ];
 
+        // Handle relationships and audit logging
+        foreach ($relationMap as $key => $relation) {
+            $newIds = $validated[$key] ?? [];
+            $oldIds = $oldRelations[$relation] ?? [];
+
+            // Sync relationships
+            $server->$relation()->sync($newIds);
+
+            // Calculate changes
+            $added = array_diff($newIds, $oldIds);
+            $removed = array_diff($oldIds, $newIds);
+
+            // Log attachments
+            if (!empty($added)) {
+                $this->logAudit("{$relation}_attached", $server, [
+                    'new' => $added
+                ]);
+            }
+
+            // Log detachments
+            if (!empty($removed)) {
+                $this->logAudit("{$relation}_detached", $server, [
+                    'old' => $removed
+                ]);
+            }
+        }
+
+        // Image handling (keep your existing code)
         if ($request->hasFile('image')) {
+            $oldImage = $server->image?->url;
             if ($server->image) {
                 Storage::disk('public')->delete($server->image->url);
                 $server->image()->delete();
@@ -324,6 +409,11 @@ class ServerController extends Controller
 
             $path = $request->file('image')->store('servers', 'public');
             $server->image()->create(['url' => $path]);
+
+            $this->logAudit('image_updated', $server, [
+                'old' => ['image' => $oldImage],
+                'new' => ['image' => $path]
+            ]);
         }
 
         return redirect()->route('servers.index');
@@ -360,9 +450,13 @@ class ServerController extends Controller
 
     public function destroy(Server $server)
     {
+        $oldAttributes = $server->getAttributes();
+        $oldImage = $server->image?->url;
+
         if ($server->image) {
             Storage::disk('public')->delete($server->image->url);
             $server->image()->delete();
+            $this->logAudit('image_deleted', $server, ['old' => ['image' => $oldImage]]);
         }
 
         $server->rams()->detach();
@@ -381,7 +475,7 @@ class ServerController extends Controller
         $server->cable_connectors()->detach();
 
         $server->delete();
-
+        $this->logAudit('deleted', $server, ['old' => $oldAttributes]);
         return redirect()->route('servers.index');
     }
 }

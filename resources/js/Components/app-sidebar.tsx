@@ -217,13 +217,13 @@ const data = {
         },
         {
           title: "Audits Connexions", 
-          url: "/discountComponents/",
-          permissions:  ["manage_users"],
+          url: "/authenticationLogs/",
+          permissions:  ["Affiche_Connexions_Audits"],
         },
         {
           title: "Audits logs", 
-          url: "/discountComponents/",
-          permissions:  ["manage_users"],
+          url: "/auditLogs/",
+          permissions:  ["Affiche_logs_Audits"],
         },
       ],
     },

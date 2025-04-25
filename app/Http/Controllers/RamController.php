@@ -3,14 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ram;
+use App\Models\AuditLog;
 use App\Models\Image;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Validation\ValidationException;
 
 class RamController extends Controller
 {
+    private function logAudit($event, $ram, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => Ram::class,
+            'auditable_id' => $ram->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
     public function index()
     {
         $rams = Ram::with(['brand', 'image', 'servers'])->get();
@@ -43,14 +68,17 @@ class RamController extends Controller
             ]);
 
             $ram = Ram::create($validated);
+            $this->logAudit('created', $ram, ['new' => $ram->getAttributes()]);
 
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('rams', 'public');
                 $ram->image()->create(['url' => $path]);
+                $this->logAudit('image_uploaded', $ram, ['new' => ['image' => $path]]);
             }
 
             if (!empty($validated['server_ids'])) {
                 $ram->servers()->attach($validated['server_ids']);
+                $this->logAudit('servers_attached', $ram, ['new' => $validated['server_ids']]);
             }
 
             return redirect()->route('rams.index')
@@ -81,6 +109,9 @@ class RamController extends Controller
     public function update(Request $request, Ram $ram)
     {
         try {
+            $oldAttributes = $ram->getAttributes();
+            $oldServers = $ram->servers->pluck('id')->toArray();
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'brand_id' => 'required|exists:brands,id',
@@ -94,18 +125,39 @@ class RamController extends Controller
             ]);
 
             $ram->update($validated);
+            $this->logAudit('updated', $ram, [
+                'old' => $oldAttributes,
+                'new' => $ram->getChanges()
+            ]);
 
             if ($request->hasFile('image')) {
+                $oldImage = $ram->image?->url;
+
                 if ($ram->image) {
                     Storage::disk('public')->delete($ram->image->url);
                     $ram->image()->delete();
                 }
                 $path = $request->file('image')->store('rams', 'public');
                 $ram->image()->create(['url' => $path]);
+                $this->logAudit('image_updated', $ram, [
+                    'old' => ['image' => $oldImage],
+                    'new' => ['image' => $path]
+                ]);
             }
 
             if (isset($validated['server_ids'])) {
                 $ram->servers()->sync($validated['server_ids']);
+                
+                $added = array_diff($validated['server_ids'], $oldServers);
+                $removed = array_diff($oldServers, $validated['server_ids']);
+
+                if (!empty($added)) {
+                    $this->logAudit('servers_attached', $ram, ['new' => $added]);
+                }
+
+                if (!empty($removed)) {
+                    $this->logAudit('servers_detached', $ram, ['old' => $removed]);
+                }
             }
 
             return redirect()->route('rams.index')
@@ -124,13 +176,19 @@ class RamController extends Controller
     public function destroy(Ram $ram)
     {
         try {
+            $oldAttributes = $ram->getAttributes();
+            $oldImage = $ram->image?->url;
+
             if ($ram->image) {
                 Storage::disk('public')->delete($ram->image->url);
                 $ram->image()->delete();
+                $this->logAudit('image_deleted', $ram, ['old' => ['image' => $oldImage]]);
             }
 
             $ram->servers()->detach();
             $ram->delete();
+
+            $this->logAudit('deleted', $ram, ['old' => $oldAttributes]);
 
             return redirect()->route('rams.index')
                 ->with('success', 'RAM supprimée avec succès!');

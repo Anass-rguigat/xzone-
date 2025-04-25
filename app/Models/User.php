@@ -29,6 +29,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'country',
     ];
 
+
+
+    public function authenticationLogs()
+    {
+        return $this->hasMany(AuthenticationLog::class);
+    }
     /**
      * The attributes that should be hidden for serialization.
      *

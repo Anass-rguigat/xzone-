@@ -23,11 +23,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
-        Relation::morphMap([
-            'Battery' => \App\Models\Battery::class,
-            'Ram' => \App\Models\Ram::class,
-            'Disk' => \App\Models\Server::class,
-            // Ajoute ici tous tes types de composants
-        ]);
+        
     }
 }

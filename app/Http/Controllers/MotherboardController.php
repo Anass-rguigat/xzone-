@@ -2,18 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Motherboard;
 use App\Models\Image;
 use App\Models\Server;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class MotherboardController extends Controller
 {
+    private function logAudit($event, $motherboard, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => Motherboard::class,
+            'auditable_id' => $motherboard->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
     public function index()
     {
-        $motherboards = Motherboard::with(['brand', 'image', 'servers'])->get(); // Load servers as well
+        $motherboards = Motherboard::with(['brand', 'image', 'servers'])->get();
         return Inertia::render('Motherboards/Index', ['motherboards' => $motherboards]);
     }
 
@@ -44,7 +69,6 @@ class MotherboardController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-
         $motherboard = Motherboard::create([
             'name' => $validated['name'],
             'brand_id' => $validated['brand_id'],
@@ -57,13 +81,17 @@ class MotherboardController extends Controller
             'form_factor' => $validated['form_factor'],
         ]);
 
+        $this->logAudit('created', $motherboard, ['new' => $motherboard->getAttributes()]);
+
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $motherboard->servers()->attach($validated['server_ids']);
+            $this->logAudit('servers_attached', $motherboard, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('motherboards', 'public');
             $motherboard->image()->create(['url' => $path]);
+            $this->logAudit('image_uploaded', $motherboard, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('motherboards.index');
@@ -81,9 +109,10 @@ class MotherboardController extends Controller
         ]);
     }
 
-
     public function update(Request $request, Motherboard $motherboard)
     {
+        $oldAttributes = $motherboard->getAttributes();
+        $oldServers = $motherboard->servers->pluck('id')->toArray();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -112,20 +141,41 @@ class MotherboardController extends Controller
             'form_factor' => $validated['form_factor'] ?? $motherboard->form_factor,
         ]);
 
+        $this->logAudit('updated', $motherboard, [
+            'old' => $oldAttributes,
+            'new' => $motherboard->getChanges()
+        ]);
 
         if (isset($validated['server_ids'])) {
             $motherboard->servers()->sync($validated['server_ids']);
+            
+            $added = array_diff($validated['server_ids'], $oldServers);
+            $removed = array_diff($oldServers, $validated['server_ids']);
+
+            if (!empty($added)) {
+                $this->logAudit('servers_attached', $motherboard, ['new' => $added]);
+            }
+
+            if (!empty($removed)) {
+                $this->logAudit('servers_detached', $motherboard, ['old' => $removed]);
+            }
         }
 
         if ($request->hasFile('image')) {
+            $oldImage = $motherboard->image?->url;
+
             if ($motherboard->image) {
                 Storage::disk('public')->delete($motherboard->image->url);
                 $motherboard->image()->delete();
             }
 
             $path = $request->file('image')->store('motherboards', 'public');
-
             $motherboard->image()->create(['url' => $path]);
+            
+            $this->logAudit('image_updated', $motherboard, [
+                'old' => ['image' => $oldImage],
+                'new' => ['image' => $path]
+            ]);
         }
 
         return redirect()->route('motherboards.index');
@@ -134,7 +184,6 @@ class MotherboardController extends Controller
     public function show(Motherboard $motherboard)
     {
         $motherboard->load('brand', 'image', 'servers');
-
         return Inertia::render('Motherboards/Show', [
             'motherboard' => $motherboard,
         ]);
@@ -142,14 +191,19 @@ class MotherboardController extends Controller
 
     public function destroy(Motherboard $motherboard)
     {
+        $oldAttributes = $motherboard->getAttributes();
+        $oldImage = $motherboard->image?->url;
+
         if ($motherboard->image) {
             Storage::disk('public')->delete($motherboard->image->url);
             $motherboard->image()->delete();
+            $this->logAudit('image_deleted', $motherboard, ['old' => ['image' => $oldImage]]);
         }
 
         $motherboard->servers()->detach();
-
         $motherboard->delete();
+
+        $this->logAudit('deleted', $motherboard, ['old' => $oldAttributes]);
 
         return redirect()->route('motherboards.index');
     }

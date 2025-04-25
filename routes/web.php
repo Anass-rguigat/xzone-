@@ -27,6 +27,8 @@ use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use App\Enum\PermissionsEnum;
 use App\Enum\RolesEnum;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\AuthenticationLogController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UserController;
 
@@ -273,6 +275,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Authentication Logs 
+    Route::get('/authenticationLogs', [AuthenticationLogController::class, 'index'])
+        ->name('logs.authentication.index')
+        ->middleware('can:Affiche_Connexions_Audits');
+
+
+    Route::get('/auditLogs', [AuditLogController::class, 'index'])
+        ->name('logs.audit.index')
+        ->middleware('can:Affiche_logs_Audits');
+    
+    Route::get('/journaux-audit/{auditLog}', [AuditLogController::class, 'show'])->name('journaux-audit.voir')->middleware('can:Affiche_logs_Audits');
+    
 });
 
 require __DIR__ . '/auth.php';

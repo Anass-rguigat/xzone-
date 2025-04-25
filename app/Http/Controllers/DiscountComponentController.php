@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Battery;
 use App\Models\CableConnector;
 use App\Models\Chassis;
@@ -19,16 +20,56 @@ use App\Models\RaidController;
 use App\Models\Ram;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class DiscountComponentController extends Controller
 {
+    private $componentTypes = [
+        'rams',
+        'processors',
+        'motherboards',
+        'raidControllers',
+        'chassis',
+        'fiberOpticCards',
+        'hardDrives',
+        'networkCards',
+        'powerSupplies',
+        'coolingSolutions',
+        'graphicCards',
+        'expansionCards',
+        'batteries',
+        'cable_connectors',
+    ];
+
     public function index()
     {
         $discounts = Discount::doesntHave('servers')->get();
 
         return Inertia::render('DiscountComponents/Index', [
             'discounts' => $discounts
+        ]);
+    }
+    private function logAudit($event, $discount, $changes = null)
+    {
+        $oldValues = [];
+        $newValues = [];
+
+        if ($changes) {
+            $oldValues = $changes['old'] ?? [];
+            $newValues = $changes['new'] ?? [];
+        }
+
+        AuditLog::create([
+            'user_id' => Auth::check() ? Auth::id() : null,
+            'event' => $event,
+            'auditable_type' => Discount::class,
+            'auditable_id' => $discount->id,
+            'old_values' => json_encode($oldValues),
+            'new_values' => json_encode($newValues),
+            'url' => request()->fullUrl(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
         ]);
     }
 
@@ -185,6 +226,9 @@ class DiscountComponentController extends Controller
 
     public function update(Request $request, Discount $discount)
     {
+        $oldAttributes = $discount->getAttributes();
+        $oldComponents = $this->getComponentIds($discount);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'discount_type' => 'required|in:percentage,fixed',
@@ -241,12 +285,21 @@ class DiscountComponentController extends Controller
         if ($validated['components']) {
             $this->applyDiscountToComponentsUpdate($validated['components'], $discount);
         }
+        $discount->load($this->componentTypes);
+        $newComponents = $this->getComponentIds($discount);
 
+        $this->logAudit('updated', $discount, [
+            'old' => array_merge($oldAttributes, ['components' => $oldComponents]),
+            'new' => array_merge($discount->getChanges(), ['components' => $newComponents])
+        ]);
         return redirect()->route('discountComponents.index')->with('success', 'Réduction mise à jour avec succès.');
     }
 
     public function destroy(Discount $discount)
     {
+        $oldAttributes = $discount->getAttributes();
+        $oldComponents = $this->getComponentIds($discount);
+
         $this->revertComponentPrices($discount);
         $componentTypes = [
             'rams',
@@ -270,6 +323,10 @@ class DiscountComponentController extends Controller
         }
 
         $discount->delete();
+
+        $this->logAudit('deleted', $discount, [
+            'old' => array_merge($oldAttributes, ['components' => $oldComponents])
+        ]);
 
         return redirect()->route('discountComponents.index')->with('success', 'Discount deleted and prices reverted successfully');
     }
@@ -308,6 +365,13 @@ class DiscountComponentController extends Controller
         ]);
         $this->applyDiscountToComponentsStore($request, $discount);
 
+        $discount->load($this->componentTypes);
+        $componentData = $this->getComponentIds($discount);
+
+        $this->logAudit('created', $discount, [
+            'new' => array_merge($discount->getAttributes(), ['components' => $componentData])
+        ]);
+        
         return redirect()->route('discountComponents.index')->with('success', 'Discount created successfully');
     }
 
@@ -660,4 +724,14 @@ class DiscountComponentController extends Controller
         $component->price = max($originalPrice, 0);
         $component->save();
     }
+
+    private function getComponentIds(Discount $discount)
+    {
+        $componentData = [];
+        foreach ($this->componentTypes as $type) {
+            $componentData[$type] = $discount->$type->pluck('id')->toArray();
+        }
+        return $componentData;
+    }
 }
+
