@@ -110,7 +110,7 @@ export default function Index({ auth, users }: PageProps<{ users: User[] }>) {
                                                 </div>
                                             </th>
                                         ))}
-                                        {(can(auth.user, 'manage_users')) && (
+                                        {(can(auth.user, 'Gerer_Utilisateurs')) && (
                                             <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                                         )}
                                     </tr>
@@ -146,7 +146,7 @@ export default function Index({ auth, users }: PageProps<{ users: User[] }>) {
                                             </td>
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-2">
-                                                    {can(auth.user, 'manage_users') && (
+                                                    {can(auth.user, 'Gerer_Utilisateurs') && (
                                                         <Link
                                                             href={route('users.edit', user.id)}
                                                             className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"

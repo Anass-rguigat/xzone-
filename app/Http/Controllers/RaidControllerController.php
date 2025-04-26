@@ -73,17 +73,17 @@ class RaidControllerController extends Controller
             'supported_levels' => $validated['supported_levels'],
         ]);
 
-        $this->logAudit('created', $raidController, ['new' => $raidController->getAttributes()]);
+        $this->logAudit('ajouter', $raidController, ['new' => $raidController->getAttributes()]);
 
         if (!empty($validated['server_ids'])) {
             $raidController->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $raidController, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $raidController, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('raid_controllers', 'public');
             $raidController->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $raidController, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $raidController, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('raid-controllers.index');
@@ -125,7 +125,7 @@ class RaidControllerController extends Controller
             'supported_levels' => $validated['supported_levels'],
         ]);
 
-        $this->logAudit('updated', $raidController, [
+        $this->logAudit('modifier', $raidController, [
             'old' => $oldAttributes,
             'new' => $raidController->getChanges()
         ]);
@@ -137,11 +137,11 @@ class RaidControllerController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $raidController, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $raidController, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $raidController, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $raidController, ['old' => $removed]);
             }
         }
 
@@ -156,7 +156,7 @@ class RaidControllerController extends Controller
             $path = $request->file('image')->store('raid_controllers', 'public');
             $raidController->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $raidController, [
+            $this->logAudit('image_modifier', $raidController, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -181,13 +181,13 @@ class RaidControllerController extends Controller
         if ($raidController->image) {
             Storage::disk('public')->delete($raidController->image->url);
             $raidController->image()->delete();
-            $this->logAudit('image_deleted', $raidController, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $raidController, ['old' => ['image' => $oldImage]]);
         }
 
         $raidController->servers()->detach();
         $raidController->delete();
 
-        $this->logAudit('deleted', $raidController, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $raidController, ['old' => $oldAttributes]);
 
         return redirect()->route('raid-controllers.index');
     }

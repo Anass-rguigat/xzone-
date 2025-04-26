@@ -106,7 +106,7 @@ export default function Show({ log }: Props) {
                 </div>
 
                 <hr className="border-gray-200" />
-
+                {/*
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="text-sm font-medium text-gray-700">Anciennes Valeurs</label>
@@ -126,7 +126,7 @@ export default function Show({ log }: Props) {
                         </div>
                     </div>
                 </div>
-
+                */}
                 {/* Actions */}
                 <div className="flex justify-end pt-6">
                     <Link

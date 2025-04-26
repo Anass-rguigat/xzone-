@@ -106,7 +106,7 @@ export default function Index({ suppliers }: Props) {
                                 />
                                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
-                            {can(user, 'Add_Suppliers') && (
+                            {can(user, 'Ajouter_Fournisseurs') && (
                                 <Link
                                     href="/suppliers/create"
                                     className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
@@ -147,7 +147,7 @@ export default function Index({ suppliers }: Props) {
                                                 </div>
                                             </th>
                                         ))}
-                                        {(can(user, 'DeleteSuppliers') || can(user, 'EditSuppliers')) && (
+                                        {(can(user, 'Supprimer_Fournisseurs') || can(user, 'Modifier_Fournisseurs')) && (
                                             <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                                         )}
                                     </tr>
@@ -163,7 +163,7 @@ export default function Index({ suppliers }: Props) {
                                             <td className="px-4 py-2 text-sm text-gray-600">{supplier.country}</td>
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-2">
-                                                    {can(user, 'Edit_Suppliers') && (
+                                                    {can(user, 'Modifier_Fournisseurs') && (
                                                         <Link
                                                             href={`/suppliers/${supplier.id}/edit`}
                                                             className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
@@ -171,7 +171,7 @@ export default function Index({ suppliers }: Props) {
                                                             <PencilIcon className="h-4 w-4" />
                                                         </Link>
                                                     )}
-                                                    {can(user, 'Delete_Suppliers') && (
+                                                    {can(user, 'Supprimer_Fournisseurs') && (
                                                         <button
                                                             onClick={() => handleDelete(supplier.id)}
                                                             className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
@@ -179,13 +179,7 @@ export default function Index({ suppliers }: Props) {
                                                             <TrashIcon className="h-4 w-4" />
                                                         </button>
                                                     )}
-                                                    {can(user, 'Show_Suppliers') && (
-                                                    <Link
-                                                        href={`/suppliers/${supplier.id}`}
-                                                        className="text-green-600 hover:text-green-700 transition-colors p-1 hover:bg-green-50 rounded"
-                                                    >
-                                                        <EyeIcon className="h-4 w-4" />
-                                                    </Link>)}
+                                                    
                                                 </div>
                                             </td>
                                         </tr>

@@ -203,7 +203,7 @@ export default function EditDiscount({ discount, servers, associatedServers, err
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Edit_Discounts_Servers') && (
+                            {can(user, 'Modifier_Remises_Serveurs') && (
                                 <button
                                     type="submit"
                                     disabled={processing}

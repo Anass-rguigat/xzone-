@@ -58,7 +58,7 @@ class CustomerController extends Controller
         ]);
 
         $customer = Customer::create($validated);
-        $this->logAudit('created', $customer, ['new' => $customer->getAttributes()]);
+        $this->logAudit('ajouter', $customer, ['new' => $customer->getAttributes()]);
 
         return redirect()->route('customers.index')
             ->with('success', 'Customer created successfully.');
@@ -93,7 +93,7 @@ class CustomerController extends Controller
         ]);
 
         $customer->update($validated);
-        $this->logAudit('updated', $customer, [
+        $this->logAudit('modifier', $customer, [
             'old' => $oldAttributes,
             'new' => $customer->getChanges()
         ]);
@@ -106,7 +106,7 @@ class CustomerController extends Controller
     {
         $oldAttributes = $customer->getAttributes();
         $customer->delete();
-        $this->logAudit('deleted', $customer, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $customer, ['old' => $oldAttributes]);
 
         return redirect()->route('customers.index')
             ->with('success', 'Customer deleted successfully.');

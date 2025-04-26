@@ -65,7 +65,7 @@ class ProfileController extends Controller
         $user->save();
 
         // Log profile update
-        $this->logAudit('profile_updated', $user, [
+        $this->logAudit('profile_modifier', $user, [
             'old' => array_intersect_key($oldAttributes, $request->validated()),
             'new' => $user->getChanges()
         ]);
@@ -90,7 +90,7 @@ class ProfileController extends Controller
         $user->delete();
 
         // Log account deletion
-        $this->logAudit('account_deleted', $user, [
+        $this->logAudit('compte_supprimer', $user, [
             'old' => $oldAttributes
         ]);
 

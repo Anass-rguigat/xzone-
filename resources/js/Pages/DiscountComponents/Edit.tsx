@@ -259,7 +259,7 @@ const EditDiscount = ({
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Edit_Discounts_Composants') && (
+                            {can(user, 'Modifier_Remises_Composants') && (
                                 <button
                                     type="submit"
                                     className="px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-colors"

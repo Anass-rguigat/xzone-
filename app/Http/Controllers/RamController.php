@@ -68,17 +68,17 @@ class RamController extends Controller
             ]);
 
             $ram = Ram::create($validated);
-            $this->logAudit('created', $ram, ['new' => $ram->getAttributes()]);
+            $this->logAudit('ajouter', $ram, ['new' => $ram->getAttributes()]);
 
             if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('rams', 'public');
                 $ram->image()->create(['url' => $path]);
-                $this->logAudit('image_uploaded', $ram, ['new' => ['image' => $path]]);
+                $this->logAudit('image_ajouter', $ram, ['new' => ['image' => $path]]);
             }
 
             if (!empty($validated['server_ids'])) {
                 $ram->servers()->attach($validated['server_ids']);
-                $this->logAudit('servers_attached', $ram, ['new' => $validated['server_ids']]);
+                $this->logAudit('attacher_serveurs', $ram, ['new' => $validated['server_ids']]);
             }
 
             return redirect()->route('rams.index')
@@ -125,7 +125,7 @@ class RamController extends Controller
             ]);
 
             $ram->update($validated);
-            $this->logAudit('updated', $ram, [
+            $this->logAudit('modifier', $ram, [
                 'old' => $oldAttributes,
                 'new' => $ram->getChanges()
             ]);
@@ -139,7 +139,7 @@ class RamController extends Controller
                 }
                 $path = $request->file('image')->store('rams', 'public');
                 $ram->image()->create(['url' => $path]);
-                $this->logAudit('image_updated', $ram, [
+                $this->logAudit('image_modifier', $ram, [
                     'old' => ['image' => $oldImage],
                     'new' => ['image' => $path]
                 ]);
@@ -152,11 +152,11 @@ class RamController extends Controller
                 $removed = array_diff($oldServers, $validated['server_ids']);
 
                 if (!empty($added)) {
-                    $this->logAudit('servers_attached', $ram, ['new' => $added]);
+                    $this->logAudit('attacher_serveurs', $ram, ['new' => $added]);
                 }
 
                 if (!empty($removed)) {
-                    $this->logAudit('servers_detached', $ram, ['old' => $removed]);
+                    $this->logAudit('détacher_serveurs', $ram, ['old' => $removed]);
                 }
             }
 
@@ -182,13 +182,13 @@ class RamController extends Controller
             if ($ram->image) {
                 Storage::disk('public')->delete($ram->image->url);
                 $ram->image()->delete();
-                $this->logAudit('image_deleted', $ram, ['old' => ['image' => $oldImage]]);
+                $this->logAudit('image_supprimer', $ram, ['old' => ['image' => $oldImage]]);
             }
 
             $ram->servers()->detach();
             $ram->delete();
 
-            $this->logAudit('deleted', $ram, ['old' => $oldAttributes]);
+            $this->logAudit('supprimer', $ram, ['old' => $oldAttributes]);
 
             return redirect()->route('rams.index')
                 ->with('success', 'RAM supprimée avec succès!');

@@ -330,7 +330,7 @@ export default function Edit({ motherboard, brands, servers }: Props) {
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Edit_Composants') &&
+                            {can(user, 'Modifier_Composants') &&
                                 <button
                                     type="submit"
                                     disabled={!!progress}

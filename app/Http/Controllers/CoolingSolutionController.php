@@ -75,17 +75,17 @@ class CoolingSolutionController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('created', $coolingSolution, ['new' => $coolingSolution->getAttributes()]);
+        $this->logAudit('ajouter', $coolingSolution, ['new' => $coolingSolution->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $coolingSolution->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $coolingSolution, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $coolingSolution, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('cooling_solutions', 'public');
             $coolingSolution->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $coolingSolution, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $coolingSolution, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('cooling-solutions.index');
@@ -129,7 +129,7 @@ class CoolingSolutionController extends Controller
             'price' => $validated['price'] ?? $coolingSolution->price,
         ]);
 
-        $this->logAudit('updated', $coolingSolution, [
+        $this->logAudit('modifier', $coolingSolution, [
             'old' => $oldAttributes,
             'new' => $coolingSolution->getChanges()
         ]);
@@ -141,11 +141,11 @@ class CoolingSolutionController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $coolingSolution, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $coolingSolution, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $coolingSolution, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $coolingSolution, ['old' => $removed]);
             }
         }
 
@@ -160,7 +160,7 @@ class CoolingSolutionController extends Controller
             $path = $request->file('image')->store('cooling_solutions', 'public');
             $coolingSolution->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $coolingSolution, [
+            $this->logAudit('image_modifier', $coolingSolution, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -185,13 +185,13 @@ class CoolingSolutionController extends Controller
         if ($coolingSolution->image) {
             Storage::disk('public')->delete($coolingSolution->image->url);
             $coolingSolution->image()->delete();
-            $this->logAudit('image_deleted', $coolingSolution, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $coolingSolution, ['old' => ['image' => $oldImage]]);
         }
 
         $coolingSolution->servers()->detach();
         $coolingSolution->delete();
 
-        $this->logAudit('deleted', $coolingSolution, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $coolingSolution, ['old' => $oldAttributes]);
 
         return redirect()->route('cooling-solutions.index');
     }

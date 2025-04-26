@@ -203,7 +203,7 @@ export default function Create({ brands, servers }: Props) {
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Add_Composants') &&
+                            {can(user, 'Ajouter_Composants') &&
                                 <button
                                     type="submit"
                                     disabled={processing}

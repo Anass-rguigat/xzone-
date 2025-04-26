@@ -53,84 +53,84 @@ const data = {
       title: "Marques", // "Brands"
       url: "/brands/",
       icon: Bookmark,
-      permissions: ["List_Brands"], // Permission required to view "Brands"
+      permissions: ["Lister_Marques"], // Permission required to view "Brands"
     },
     {
       title: "Composants", // "Components"
       url: "#",
       icon: Cpu,
       isActive: false,
-      permissions: ["List_Composants"], // Permission for "Composants" section
+      permissions: ["Lister_Composants"], // Permission for "Composants" section
       items: [
         {
           title: "Rams",
           url: "/rams/",
-          permissions: ["List_Composants"], // Permission for "Rams"
+          permissions: ["Lister_Composants"], // Permission for "Rams"
         },
         {
           title: "Disque Dur", // "Hard Drive"
           url: "/hard-drives/",
-          permissions: ["List_Composants"], // Permission for "Hard Drive"
+          permissions: ["Lister_Composants"], // Permission for "Hard Drive"
         },
         {
           title: "Processeur", // "Processor"
           url: "/processors/",
-          permissions: ["List_Composants"], // Permission for "Processor"
+          permissions: ["Lister_Composants"], // Permission for "Processor"
         },
         {
           title: "Alimentations", // "Power Supplies"
           url: "/power-supplies/",
-          permissions: ["List_Composants"], // Permission for "Power Supplies"
+          permissions: ["Lister_Composants"], // Permission for "Power Supplies"
         },
         {
           title: "Cartes Mères", // "Motherboards"
           url: "/motherboards/",
-          permissions: ["List_Composants"], // Permission for "Motherboards"
+          permissions: ["Lister_Composants"], // Permission for "Motherboards"
         },
         {
           title: "Cartes Réseau", // "Network Cards"
           url: "/network-cards/",
-          permissions: ["List_Composants"], // Permission for "Network Cards"
+          permissions: ["Lister_Composants"], // Permission for "Network Cards"
         },
         {
           title: "Contrôleurs RAID", // "Raid Controllers"
           url: "/raid-controllers/",
-          permissions: ["List_Composants"], // Permission for "Raid Controllers"
+          permissions: ["Lister_Composants"], // Permission for "Raid Controllers"
         },
         {
           title: "Solutions de Refroidissement", // "Cooling Solutions"
           url: "/cooling-solutions/",
-          permissions: ["List_Composants"], // Permission for "Cooling Solutions"
+          permissions: ["Lister_Composants"], // Permission for "Cooling Solutions"
         },
         {
           title: "Châssis", // "Chassis"
           url: "/chassis/",
-          permissions: ["List_Composants"], // Permission for "Chassis"
+          permissions: ["Lister_Composants"], // Permission for "Chassis"
         },
         {
           title: "Cartes Graphiques", // "Graphics Cards"
           url: "/graphic-cards/",
-          permissions: ["List_Composants"], // Permission for "Graphics Cards"
+          permissions: ["Lister_Composants"], // Permission for "Graphics Cards"
         },
         {
           title: "Cartes Fibre Optique", // "Fiber Optic Cards"
           url: "/fiber-optic-cards/",
-          permissions: ["List_Composants"], // Permission for "Fiber Optic Cards"
+          permissions: ["Lister_Composants"], // Permission for "Fiber Optic Cards"
         },
         {
           title: "Cartes d'Extension", // "Expansion Cards"
           url: "/expansion-cards/",
-          permissions: ["List_Composants"], // Permission for "Expansion Cards"
+          permissions: ["Lister_Composants"], // Permission for "Expansion Cards"
         },
         {
           title: "Batteries", 
           url: "/batteries/",
-          permissions: ["List_Composants"], // Permission for "Batteries"
+          permissions: ["Lister_Composants"], // Permission for "Batteries"
         },
         {
           title: "Câbles", // "Cables"
           url: "/cable-connectors/",
-          permissions: ["List_Composants"], // Permission for "Cables"
+          permissions: ["Lister_Composants"], // Permission for "Cables"
         },
       ],
     },
@@ -138,24 +138,24 @@ const data = {
       title: "Serveurs", // "Servers"
       url: "/servers/",
       icon: Server,
-      permissions: ["List_Servers"], // Permission for "Servers"
+      permissions: ["Lister_Serveurs"], // Permission for "Servers"
     },
     {
       title: "Réductions", // "Discount"
       url: "#",
       icon: Tag,
       isActive: false,
-      permissions: ["List_Discounts_Servers", "List_Discounts_Composants"], // Permissions for Discounts
+      permissions: ["Lister_Remises_Serveurs", "Lister_Remises_Composants"], // Permissions for Discounts
       items: [
         {
           title: "Serveurs",
           url: "/discounts/",
-          permissions: ["List_Discounts_Servers"], // Permission for "Discounts - Servers"
+          permissions: ["Lister_Remises_Serveurs"], // Permission for "Discounts - Servers"
         },
         {
           title: "Composants", // "Components"
           url: "/discountComponents/",
-          permissions: ["List_Discounts_Composants"], // Permission for "Discounts - Components"
+          permissions: ["Lister_Remises_Composants"], // Permission for "Discounts - Components"
         },
       ],
     },
@@ -163,31 +163,31 @@ const data = {
       title: "Fournisseurs", // "Suppliers"
       url: "/suppliers/",
       icon: Package,
-      permissions: ["List_Suppliers"], // Permission for "Suppliers"
+      permissions: ["Lister_Fournisseurs"], // Permission for "Suppliers"
     },
     {
       title: "Stock",
       url: "#",
       icon: Warehouse,
       isActive: false,
-      permissions: ["List_Stock_Mouvements", "List_Stock_Mouvements"], // Permissions for "Stock"
+      permissions: ["Lister_Mouvements_Stock", "Lister_Niveaux_Stock"], // Permissions for "Stock"
       items: [
         {
           title: "Mouvement", // "Movement"
           url: "/stock-movements/",
-          permissions: ["List_Stock_Mouvements"], // Permission for "Stock Movements"
+          permissions: ["Lister_Mouvements_Stock"], // Permission for "Stock Movements"
         },
         {
           title: "Niveaux", // "Levels"
           url: "/stock-levels/",
-          permissions: ["List_Stock_Levels"], // Permission for "Stock Levels"
+          permissions: ["Lister_Niveaux_Stock"], // Permission for "Stock Levels"
         },
       ],
     },
   ],
   projects: [
     {
-      permissions: ["List_Dashboard"],
+      permissions: ["Lister_Tableau_de_bord"],
       name: "Ventes & Marketing", // "Sales & Marketing"
       url: "/dashboard",
       icon: PieChart,
@@ -199,12 +199,12 @@ const data = {
       url: "#",
       icon: Users,
       isActive: false,
-      permissions: ["manage_users"],
+      permissions: ["Gerer_Utilisateurs"],
       items: [
         {
           title: "Rôles & Permissions",
           url: "/users/",
-          permissions:  ["manage_users"], 
+          permissions:  ["Gerer_Utilisateurs"], 
         },
         {
           title: "Profil", 
@@ -213,17 +213,17 @@ const data = {
         {
           title: "Clients Informations",
           url: "/customers/",
-          permissions:  ["manage_users"], 
+          permissions:  ["Gerer_Utilisateurs"], 
         },
         {
           title: "Audits Connexions", 
           url: "/authenticationLogs/",
-          permissions:  ["Affiche_Connexions_Audits"],
+          permissions:  ["Voir_Audits_Connexion"],
         },
         {
           title: "Audits logs", 
           url: "/auditLogs/",
-          permissions:  ["Affiche_logs_Audits"],
+          permissions:  ["Voir_Logs_Audit"],
         },
       ],
     },

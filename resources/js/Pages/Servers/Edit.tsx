@@ -418,7 +418,7 @@ export default function Edit({
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Edit_Servers') && (
+                            {can(user, 'Modifier_Serveurs') && (
                                 <button
                                     type="submit"
                                     disabled={!!progress}

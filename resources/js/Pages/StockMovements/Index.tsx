@@ -120,7 +120,7 @@ export default function Index({ movements, suppliers }: Props) {
                                 />
                                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
-                            {can(user, 'Add_Stock_Mouvements') && (
+                            {can(user, 'Ajouter_Mouvements_Stock') && (
                                 <Link
                                     href="/stock-movements/create"
                                     className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
@@ -160,7 +160,7 @@ export default function Index({ movements, suppliers }: Props) {
                                                 </div>
                                             </th>
                                         ))}
-                                        {(can(user, 'Edit_StockMovements') || can(user, 'Delete_StockMovements')) && (
+                                        {(can(user, 'Modifier_Mouvements_Stock') || can(user, 'Supprimer_Mouvements_Stock')) && (
                                             <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                                         )}
                                     </tr>
@@ -189,7 +189,7 @@ export default function Index({ movements, suppliers }: Props) {
                                             </td>
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-2">
-                                                    {can(user, 'Edit_Stock_Mouvements') && (
+                                                    {can(user, 'Modifier_Mouvements_Stock') && (
                                                         <Link
                                                             href={`/stock-movements/${movement.id}/edit`}
                                                             className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
@@ -197,7 +197,7 @@ export default function Index({ movements, suppliers }: Props) {
                                                             <PencilIcon className="h-4 w-4" />
                                                         </Link>
                                                     )}
-                                                    {can(user, 'Delete_Stock_Mouvements') && (
+                                                    {can(user, 'Supprimer_Mouvements_Stock') && (
                                                         <button
                                                             onClick={() => {
                                                                 if(confirm('Confirmer la suppression ?')) {

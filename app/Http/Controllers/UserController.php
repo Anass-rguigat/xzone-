@@ -50,7 +50,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        if (!Gate::allows('manage_users') && Auth::id() !== $user->id) {
+        if (!Gate::allows('Gerer_Utilisateurs') && Auth::id() !== $user->id) {
             return redirect()->route('users.index')
                 ->with('error', 'You do not have permission to edit this user.');
         }
@@ -66,7 +66,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        if (!Gate::allows('manage_users') && Auth::id() !== $user->id) {
+        if (!Gate::allows('Gerer_Utilisateurs') && Auth::id() !== $user->id) {
             return redirect()->route('users.index')
                 ->with('error', 'You do not have permission to update this user.');
         }
@@ -74,9 +74,6 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'city' => ['nullable', 'string', 'max:100'],
-            'country' => ['nullable', 'string', 'max:100'],
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['string', 'in:' . implode(',', RolesEnum::values())],
             'permissions' => ['required', 'array', 'min:1'],
@@ -108,9 +105,6 @@ class UserController extends Controller
                 $user->update([
                     'name' => $validated['name'],
                     'email' => $validated['email'],
-                    'phone' => $validated['phone'],
-                    'city' => $validated['city'],
-                    'country' => $validated['country'],
                 ]);
 
                 // Sync roles and permissions
@@ -129,7 +123,7 @@ class UserController extends Controller
                 $newPermissions = $user->getAllPermissions()->pluck('name')->toArray();
 
                 // Log user changes
-                $this->logAudit('updated', $user, [
+                $this->logAudit('modifier', $user, [
                     'old' => $oldAttributes,
                     'new' => $user->getChanges()
                 ]);
@@ -139,10 +133,10 @@ class UserController extends Controller
                 $removedRoles = array_diff($oldRoles, $newRoles);
                 
                 if (!empty($addedRoles)) {
-                    $this->logAudit('roles_added', $user, ['new' => $addedRoles]);
+                    $this->logAudit('rôles_ajouter', $user, ['new' => $addedRoles]);
                 }
                 if (!empty($removedRoles)) {
-                    $this->logAudit('roles_removed', $user, ['old' => $removedRoles]);
+                    $this->logAudit('rôles_retirer', $user, ['old' => $removedRoles]);
                 }
 
                 // Log permission changes
@@ -150,10 +144,10 @@ class UserController extends Controller
                 $removedPermissions = array_diff($oldPermissions, $newPermissions);
                 
                 if (!empty($addedPermissions)) {
-                    $this->logAudit('permissions_added', $user, ['new' => $addedPermissions]);
+                    $this->logAudit('permissions_ajouter', $user, ['new' => $addedPermissions]);
                 }
                 if (!empty($removedPermissions)) {
-                    $this->logAudit('permissions_removed', $user, ['old' => $removedPermissions]);
+                    $this->logAudit('permissions_retirer', $user, ['old' => $removedPermissions]);
                 }
             });
 

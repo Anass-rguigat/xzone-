@@ -83,17 +83,17 @@ class ProcessorController extends Controller
             'thermal_design_power' => $validated['thermal_design_power'],
         ]);
 
-        $this->logAudit('created', $processor, ['new' => $processor->getAttributes()]);
+        $this->logAudit('ajouter', $processor, ['new' => $processor->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $processor->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $processor, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $processor, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('processors', 'public');
             $processor->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $processor, ['new' => ['image' => $path]]);
+            $this->logAudit('image_supprimer', $processor, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('processors.index');
@@ -145,7 +145,7 @@ class ProcessorController extends Controller
             'thermal_design_power' => $validated['thermal_design_power'] ?? $processor->thermal_design_power,
         ]);
 
-        $this->logAudit('updated', $processor, [
+        $this->logAudit('modifier', $processor, [
             'old' => $oldAttributes,
             'new' => $processor->getChanges()
         ]);
@@ -157,11 +157,11 @@ class ProcessorController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $processor, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $processor, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $processor, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $processor, ['old' => $removed]);
             }
         }
 
@@ -176,7 +176,7 @@ class ProcessorController extends Controller
             $path = $request->file('image')->store('processors', 'public');
             $processor->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $processor, [
+            $this->logAudit('image_modifier', $processor, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -201,13 +201,13 @@ class ProcessorController extends Controller
         if ($processor->image) {
             Storage::disk('public')->delete($processor->image->url);
             $processor->image()->delete();
-            $this->logAudit('image_deleted', $processor, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $processor, ['old' => ['image' => $oldImage]]);
         }
 
         $processor->servers()->detach();
         $processor->delete();
 
-        $this->logAudit('deleted', $processor, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $processor, ['old' => $oldAttributes]);
 
         return redirect()->route('processors.index');
     }

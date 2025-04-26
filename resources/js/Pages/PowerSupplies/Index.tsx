@@ -130,7 +130,7 @@ export default function Index({ powerSupplies }: Props) {
                                 />
                                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
-                            {can(user, 'Add_Composants') && (
+                            {can(user, 'Ajouter_Composants') && (
                                 <Link
                                     href="/power-supplies/create"
                                     className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
@@ -174,7 +174,7 @@ export default function Index({ powerSupplies }: Props) {
                                                 </div>
                                             </th>
                                         ))}
-                                        {(can(user, 'Delete_Composants') || can(user, 'Edit_Composants')) && (
+                                        {(can(user, 'Supprimer_Composants') || can(user, 'Modifier_Composants')) && (
                                             <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                                         )}
                                     </tr>
@@ -222,10 +222,9 @@ export default function Index({ powerSupplies }: Props) {
                                                     <span className="text-gray-400">-</span>
                                                 )}
                                             </td>
-                                            {(can(user, 'Delete_Composants') || can(user, 'Edit_Composants')) && (
                                                 <td className="px-4 py-2">
                                                     <div className="flex gap-2">
-                                                        {can(user, 'Edit_Composants') && (
+                                                        {can(user, 'Modifier_Composants') && (
                                                             <Link
                                                                 href={`/power-supplies/${powerSupply.id}/edit`}
                                                                 className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
@@ -233,7 +232,7 @@ export default function Index({ powerSupplies }: Props) {
                                                                 <PencilIcon className="h-4 w-4" />
                                                             </Link>
                                                         )}
-                                                        {can(user, 'Delete_Composants') && (
+                                                        {can(user, 'Supprimer_Composants') && (
                                                             <button
                                                                 onClick={() => handleDelete(powerSupply.id)}
                                                                 className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
@@ -243,7 +242,6 @@ export default function Index({ powerSupplies }: Props) {
                                                         )}
                                                     </div>
                                                 </td>
-                                            )}
                                         </tr>
                                     ))}
                                 </tbody>

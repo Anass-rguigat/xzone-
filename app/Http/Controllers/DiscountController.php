@@ -120,7 +120,7 @@ class DiscountController extends Controller
                 $this->updateServerPrice($server, $discount);
             }
 
-            $this->logAudit('created', $discount, [
+            $this->logAudit('ajouter', $discount, [
                 'new' => array_merge($discount->getAttributes(), ['servers' => $this->getServerIds($discount)])
             ]);
 
@@ -219,7 +219,7 @@ class DiscountController extends Controller
 
             DB::commit();
 
-            $this->logAudit('updated', $discount, [
+            $this->logAudit('modifier', $discount, [
                 'old' => array_merge($oldAttributes, ['servers' => $oldServers]),
                 'new' => array_merge($discount->getChanges(), ['servers' => $this->getServerIds($discount)])
             ]);
@@ -268,7 +268,7 @@ class DiscountController extends Controller
 
         $discount->delete();
 
-        $this->logAudit('deleted', $discount, [
+        $this->logAudit('supprimer', $discount, [
             'old' => array_merge($oldAttributes, ['servers' => $oldServers])
         ]);
 

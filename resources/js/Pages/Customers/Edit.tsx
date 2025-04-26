@@ -176,7 +176,7 @@ export default function Edit({ customer }: Props) {
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'manage_users') && (
+                            {can(user, 'Gerer_Utilisateurs') && (
                                 <button
                                     type="submit"
                                     disabled={processing}

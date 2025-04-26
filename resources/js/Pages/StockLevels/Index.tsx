@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Layout } from '@/Layouts/layout';
 import toast from 'react-hot-toast';
 import { PlusIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react';
-import { can } from '@/helpers';
+
 interface Component {
     id: number;
     name: string;

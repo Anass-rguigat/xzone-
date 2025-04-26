@@ -4,7 +4,6 @@ import { Layout } from '@/Layouts/layout';
 import toast from 'react-hot-toast';
 import { ChevronUpIcon, ChevronDownIcon, SearchIcon, TrashIcon, EyeIcon } from 'lucide-react';
 import { UAParser } from 'ua-parser-js';
-import { can } from '@/helpers';
 
 interface User {
     id: number;
@@ -14,7 +13,7 @@ interface User {
 
 interface AuthenticationLog {
     id: number;
-    user_id: number|null;
+    user_id: number | null;
     email: string;
     ip_address: string;
     mac_address: string;
@@ -51,7 +50,7 @@ export default function Index({ logs }: Props) {
         };
     };
 
-    
+
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value.toLowerCase());
@@ -76,15 +75,15 @@ export default function Index({ logs }: Props) {
         if (!sortConfig) return 0;
         const aValue = a[sortConfig.key];
         const bValue = b[sortConfig.key];
-        
+
         if (sortConfig.key === 'created_at') {
-            return sortConfig.direction === 'asc' 
+            return sortConfig.direction === 'asc'
                 ? new Date(aValue).getTime() - new Date(bValue).getTime()
                 : new Date(bValue).getTime() - new Date(aValue).getTime();
         }
-        
-        return sortConfig.direction === 'asc' 
-            ? String(aValue).localeCompare(String(bValue)) 
+
+        return sortConfig.direction === 'asc'
+            ? String(aValue).localeCompare(String(bValue))
             : String(bValue).localeCompare(String(aValue));
     });
 
@@ -95,8 +94,8 @@ export default function Index({ logs }: Props) {
 
     const getSortIcon = (key: keyof AuthenticationLog) => {
         if (!sortConfig || sortConfig.key !== key) return <ChevronUpIcon className="h-4 w-4 ml-1 opacity-50" />;
-        return sortConfig.direction === 'asc' 
-            ? <ChevronUpIcon className="h-4 w-4 ml-1" /> 
+        return sortConfig.direction === 'asc'
+            ? <ChevronUpIcon className="h-4 w-4 ml-1" />
             : <ChevronDownIcon className="h-4 w-4 ml-1" />;
     };
 
@@ -140,7 +139,7 @@ export default function Index({ logs }: Props) {
                                             { key: 'success', label: 'Statut', sortable: true },
                                             { key: 'details', label: 'Détails', sortable: false },
                                         ].map((header) => (
-                                            <th 
+                                            <th
                                                 key={header.key}
                                                 className="px-4 py-2 text-left text-xs font-semibold text-gray-700"
                                                 onClick={() => header.sortable && handleSort(header.key as keyof AuthenticationLog)}
@@ -155,13 +154,13 @@ export default function Index({ logs }: Props) {
                                                 </div>
                                             </th>
                                         ))}
-                                        
+
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {currentItems.map((log) => {
                                         const { browser, os } = parseUserAgent(log.user_agent);
-                                        
+
                                         return (
                                             <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-4 py-2 text-sm text-gray-600">
@@ -191,7 +190,7 @@ export default function Index({ logs }: Props) {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                
+
                                             </tr>
                                         );
                                     })}

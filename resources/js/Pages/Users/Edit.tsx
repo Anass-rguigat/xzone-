@@ -89,47 +89,7 @@ export default function Edit({ auth, user, roles, roleLabels, permissions, permi
                                 )}
                             </div>
 
-                            <div>
-                                <InputLabel htmlFor="phone" value="Téléphone" />
-                                <TextInput
-                                    id="phone"
-                                    type="tel"
-                                    value={data.phone}
-                                    className="mt-1 block w-full"
-                                    onChange={(e) => setData('phone', e.target.value)}
-                                />
-                                {errors.phone && (
-                                    <p className="text-red-600 text-xs mt-1">{errors.phone}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="city" value="Ville" />
-                                <TextInput
-                                    id="city"
-                                    type="text"
-                                    value={data.city}
-                                    className="mt-1 block w-full"
-                                    onChange={(e) => setData('city', e.target.value)}
-                                />
-                                {errors.city && (
-                                    <p className="text-red-600 text-xs mt-1">{errors.city}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <InputLabel htmlFor="country" value="Pays" />
-                                <TextInput
-                                    id="country"
-                                    type="text"
-                                    value={data.country}
-                                    className="mt-1 block w-full"
-                                    onChange={(e) => setData('country', e.target.value)}
-                                />
-                                {errors.country && (
-                                    <p className="text-red-600 text-xs mt-1">{errors.country}</p>
-                                )}
-                            </div>
+                            
                         </div>
 
                         <hr className="border-gray-200" />
@@ -218,7 +178,7 @@ export default function Edit({ auth, user, roles, roleLabels, permissions, permi
                             >
                                 Annuler
                             </button>
-                            {can(auth.user, 'manage_users') && (
+                            {can(auth.user, 'Gerer_Utilisateurs') && (
                                 <button
                                     type="submit"
                                     disabled={processing}

@@ -122,7 +122,7 @@ export default function Index({ batteries }: Props) {
                                 />
                                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
-                            {can(user, 'Add_Composants') && (
+                            {can(user, 'Ajouter_Composants') && (
                                 <Link
                                     href="/batteries/create"
                                     className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
@@ -164,7 +164,7 @@ export default function Index({ batteries }: Props) {
                                                 </div>
                                             </th>
                                         ))}
-                                        {(can(user, 'Delete_Composants') || can(user, 'Edit_Composants') || can(user, 'View_Composants')) && (
+                                        {(can(user, 'Supprimer_Composants') || can(user, 'Modifier_Composants') || can(user, 'Voir_Composants')) && (
                                             <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                                         )}
                                     </tr>
@@ -208,7 +208,7 @@ export default function Index({ batteries }: Props) {
                                             <td className="px-4 py-2 text-sm text-gray-700">{battery.capacity} Wh</td>
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-2">
-                                                    {can(user, 'View_Composants') && (
+                                                    {can(user, 'Voir_Composants') && (
                                                         <Link
                                                             href={`/batteries/${battery.id}`}
                                                             className="text-green-600 hover:text-green-700 transition-colors p-1 hover:bg-green-50 rounded"
@@ -216,7 +216,7 @@ export default function Index({ batteries }: Props) {
                                                             <EyeIcon className="h-4 w-4" />
                                                         </Link>
                                                     )}
-                                                    {can(user, 'Edit_Composants') && (
+                                                    {can(user, 'Modifier_Composants') && (
                                                         <Link
                                                             href={`/batteries/${battery.id}/edit`}
                                                             className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
@@ -224,7 +224,7 @@ export default function Index({ batteries }: Props) {
                                                             <PencilIcon className="h-4 w-4" />
                                                         </Link>
                                                     )}
-                                                    {can(user, 'Delete_Composants') && (
+                                                    {can(user, 'Supprimer_Composants') && (
                                                         <button
                                                             onClick={() => handleDelete(battery.id)}
                                                             className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"

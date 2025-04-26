@@ -53,7 +53,7 @@ class BrandController extends Controller
 
             $brand = Brand::create($validated);
             
-            $this->logAudit('created', $brand, [
+            $this->logAudit('ajouter', $brand, [
                 'new' => $brand->getAttributes()
             ]);
 
@@ -85,7 +85,7 @@ class BrandController extends Controller
 
             $brand->update($validated);
 
-            $this->logAudit('updated', $brand, [
+            $this->logAudit('modifier', $brand, [
                 'old' => $oldAttributes,
                 'new' => $brand->getChanges()
             ]);
@@ -109,7 +109,7 @@ class BrandController extends Controller
             
             $brand->delete();
 
-            $this->logAudit('deleted', $brand, [
+            $this->logAudit('supprimer', $brand, [
                 'old' => $oldAttributes
             ]);
 

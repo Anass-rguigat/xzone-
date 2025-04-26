@@ -72,7 +72,7 @@ export default function Edit({ brand }: Props) {
                         >
                             Annuler
                         </Link>
-                        {can(user, 'Edit_Brands') &&
+                        {can(user, 'Modifier_Marques') &&
                         <button
                             type="submit"
                             className="px-4 py-1 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm disabled:opacity-50"

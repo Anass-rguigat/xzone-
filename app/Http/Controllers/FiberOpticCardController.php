@@ -75,17 +75,17 @@ class FiberOpticCardController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('created', $fiberOpticCard, ['new' => $fiberOpticCard->getAttributes()]);
+        $this->logAudit('ajouter', $fiberOpticCard, ['new' => $fiberOpticCard->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $fiberOpticCard->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $fiberOpticCard, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $fiberOpticCard, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('fiber_optic_cards', 'public');
             $fiberOpticCard->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $fiberOpticCard, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $fiberOpticCard, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('fiber-optic-cards.index');
@@ -129,7 +129,7 @@ class FiberOpticCardController extends Controller
             'brand_id' => $validated['brand_id'],
         ]);
 
-        $this->logAudit('updated', $fiberOpticCard, [
+        $this->logAudit('modifier', $fiberOpticCard, [
             'old' => $oldAttributes,
             'new' => $fiberOpticCard->getChanges()
         ]);
@@ -141,11 +141,11 @@ class FiberOpticCardController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $fiberOpticCard, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $fiberOpticCard, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $fiberOpticCard, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $fiberOpticCard, ['old' => $removed]);
             }
         }
 
@@ -160,7 +160,7 @@ class FiberOpticCardController extends Controller
             $path = $request->file('image')->store('fiber_optic_cards', 'public');
             $fiberOpticCard->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $fiberOpticCard, [
+            $this->logAudit('image_modifier', $fiberOpticCard, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -185,13 +185,13 @@ class FiberOpticCardController extends Controller
         if ($fiberOpticCard->image) {
             Storage::disk('public')->delete($fiberOpticCard->image->url);
             $fiberOpticCard->image()->delete();
-            $this->logAudit('image_deleted', $fiberOpticCard, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $fiberOpticCard, ['old' => ['image' => $oldImage]]);
         }
 
         $fiberOpticCard->servers()->detach();
         $fiberOpticCard->delete();
 
-        $this->logAudit('deleted', $fiberOpticCard, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $fiberOpticCard, ['old' => $oldAttributes]);
 
         return redirect()->route('fiber-optic-cards.index');
     }

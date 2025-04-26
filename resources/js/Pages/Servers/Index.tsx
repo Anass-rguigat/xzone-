@@ -113,7 +113,7 @@ export default function Index({ data }: Props) {
                 />
                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
               </div>
-              {can(user, 'Add_Servers') && (
+              {can(user, 'Ajouter_Serveurs') && (
                 <Link
                   href="/servers/create"
                   className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
@@ -155,7 +155,7 @@ export default function Index({ data }: Props) {
                         </div>
                       </th>
                     ))}
-                    {(can(user, 'DeleteServers') || can(user, 'EditServers')) && (
+                    {(can(user, 'Supprimer_Serveurs') || can(user, 'Modifier_Serveurs') || can(user, 'Voir_Serveurs')) && (
                       <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                     )}
                   </tr>
@@ -184,7 +184,7 @@ export default function Index({ data }: Props) {
                       <td className="px-4 py-2 text-sm text-purple-600 uppercase">{server.form_factor}</td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
-                          {can(user, 'Edit_Servers') && (
+                          {can(user, 'Modifier_Serveurs') && (
                             <Link
                               href={`/servers/${server.id}/edit`}
                               className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
@@ -192,7 +192,7 @@ export default function Index({ data }: Props) {
                               <PencilIcon className="h-4 w-4" />
                             </Link>
                           )}
-                          {can(user, 'Delete_Servers') && (
+                          {can(user, 'Supprimer_Serveurs') && (
                             <button
                               onClick={() => handleDelete(server.id)}
                               className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
@@ -200,7 +200,7 @@ export default function Index({ data }: Props) {
                               <TrashIcon className="h-4 w-4" />
                             </button>
                           )}
-                          {can(user, 'Show_Servers') && (
+                          {can(user, 'Voir_Serveurs') && (
                           <Link
                             href={`/servers/${server.id}`}
                             className="text-green-600 hover:text-green-700 transition-colors p-1 hover:bg-green-50 rounded"

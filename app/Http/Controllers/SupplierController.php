@@ -63,7 +63,7 @@ class SupplierController extends Controller
         ]);
 
         $supplier = Supplier::create($validated);
-        $this->logAudit('created', $supplier, ['new' => $supplier->getAttributes()]);
+        $this->logAudit('ajouter', $supplier, ['new' => $supplier->getAttributes()]);
 
         return redirect()->route('suppliers.index')->with('success', 'Fournisseur ajouté avec succès.');
     }
@@ -88,7 +88,7 @@ class SupplierController extends Controller
         ]);
 
         $supplier->update($validated);
-        $this->logAudit('updated', $supplier, [
+        $this->logAudit('modifier', $supplier, [
             'old' => $oldAttributes,
             'new' => $supplier->getChanges()
         ]);
@@ -101,7 +101,7 @@ class SupplierController extends Controller
         $oldAttributes = $supplier->getAttributes();
         
         $supplier->delete();
-        $this->logAudit('deleted', $supplier, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $supplier, ['old' => $oldAttributes]);
 
         return redirect()->route('suppliers.index')->with('success', 'Fournisseur supprimé avec succès.');
     }

@@ -244,7 +244,7 @@ export default function Create() {
             >
               Annuler
             </Link>
-            {can(user, 'Add_Suppliers') && (
+            {can(user, 'Ajouter_Fournisseurs') && (
               <button
                 type="submit"
                 disabled={processing}

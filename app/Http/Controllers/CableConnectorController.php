@@ -77,17 +77,17 @@ class CableConnectorController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('created', $cable, ['new' => $cable->getAttributes()]);
+        $this->logAudit('ajouter', $cable, ['new' => $cable->getAttributes()]);
 
         if (!empty($validated['server_ids'])) {
             $cable->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $cable, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs ', $cable, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('cable_connectors', 'public');
             $cable->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $cable, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter ', $cable, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('cable-connectors.index');
@@ -131,7 +131,7 @@ class CableConnectorController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('updated', $cableConnector, [
+        $this->logAudit('modifier ', $cableConnector, [
             'old' => $oldAttributes,
             'new' => $cableConnector->getChanges()
         ]);
@@ -143,11 +143,11 @@ class CableConnectorController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $cableConnector, ['new' => $added]);
+                $this->logAudit('attacher_serveurs ', $cableConnector, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $cableConnector, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $cableConnector, ['old' => $removed]);
             }
         }
 
@@ -162,7 +162,7 @@ class CableConnectorController extends Controller
             $path = $request->file('image')->store('cable_connectors', 'public');
             $cableConnector->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $cableConnector, [
+            $this->logAudit('image_modifier', $cableConnector, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -185,13 +185,13 @@ class CableConnectorController extends Controller
         if ($cableConnector->image) {
             Storage::disk('public')->delete($cableConnector->image->url);
             $cableConnector->image()->delete();
-            $this->logAudit('image_deleted', $cableConnector, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $cableConnector, ['old' => ['image' => $oldImage]]);
         }
 
         $cableConnector->servers()->detach();
         $cableConnector->delete();
 
-        $this->logAudit('deleted', $cableConnector, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer ', $cableConnector, ['old' => $oldAttributes]);
 
         return redirect()->route('cable-connectors.index');
     }

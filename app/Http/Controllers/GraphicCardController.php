@@ -75,17 +75,17 @@ class GraphicCardController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('created', $graphicCard, ['new' => $graphicCard->getAttributes()]);
+        $this->logAudit('ajouter', $graphicCard, ['new' => $graphicCard->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $graphicCard->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $graphicCard, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $graphicCard, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('graphic_cards', 'public');
             $graphicCard->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $graphicCard, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $graphicCard, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('graphic-cards.index');
@@ -129,7 +129,7 @@ class GraphicCardController extends Controller
             'brand_id' => $validated['brand_id'],
         ]);
 
-        $this->logAudit('updated', $graphicCard, [
+        $this->logAudit('modifier', $graphicCard, [
             'old' => $oldAttributes,
             'new' => $graphicCard->getChanges()
         ]);
@@ -141,11 +141,11 @@ class GraphicCardController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $graphicCard, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $graphicCard, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $graphicCard, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $graphicCard, ['old' => $removed]);
             }
         }
 
@@ -160,7 +160,7 @@ class GraphicCardController extends Controller
             $path = $request->file('image')->store('graphic_cards', 'public');
             $graphicCard->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $graphicCard, [
+            $this->logAudit('image_modifier', $graphicCard, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -185,13 +185,13 @@ class GraphicCardController extends Controller
         if ($graphicCard->image) {
             Storage::disk('public')->delete($graphicCard->image->url);
             $graphicCard->image()->delete();
-            $this->logAudit('image_deleted', $graphicCard, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $graphicCard, ['old' => ['image' => $oldImage]]);
         }
 
         $graphicCard->servers()->detach();
         $graphicCard->delete();
 
-        $this->logAudit('deleted', $graphicCard, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $graphicCard, ['old' => $oldAttributes]);
 
         return redirect()->route('graphic-cards.index');
     }

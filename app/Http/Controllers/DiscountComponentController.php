@@ -288,7 +288,7 @@ class DiscountComponentController extends Controller
         $discount->load($this->componentTypes);
         $newComponents = $this->getComponentIds($discount);
 
-        $this->logAudit('updated', $discount, [
+        $this->logAudit('modifier', $discount, [
             'old' => array_merge($oldAttributes, ['components' => $oldComponents]),
             'new' => array_merge($discount->getChanges(), ['components' => $newComponents])
         ]);
@@ -324,7 +324,7 @@ class DiscountComponentController extends Controller
 
         $discount->delete();
 
-        $this->logAudit('deleted', $discount, [
+        $this->logAudit('supprimer', $discount, [
             'old' => array_merge($oldAttributes, ['components' => $oldComponents])
         ]);
 
@@ -368,7 +368,7 @@ class DiscountComponentController extends Controller
         $discount->load($this->componentTypes);
         $componentData = $this->getComponentIds($discount);
 
-        $this->logAudit('created', $discount, [
+        $this->logAudit('ajouter', $discount, [
             'new' => array_merge($discount->getAttributes(), ['components' => $componentData])
         ]);
         

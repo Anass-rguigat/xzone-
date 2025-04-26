@@ -71,7 +71,7 @@ export default function Index({ brands }: Props) {
                                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
 
-                            {can(user, 'Add_Brands') && <Link
+                            {can(user, 'Ajouter_Marques') && <Link
                                 href="/brands/create"
                                 className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
                                     text-white rounded-lg shadow-sm"
@@ -88,7 +88,7 @@ export default function Index({ brands }: Props) {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Nom</th>
-                                        {(can(user, 'Delete_Brands') || can(user, 'Edit_Brands')) && (
+                                        {(can(user, 'Supprimer_Marques') || can(user, 'Modifier_Marques')) && (
                                             <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                                         )}
                                     </tr>
@@ -99,13 +99,13 @@ export default function Index({ brands }: Props) {
                                             <td className="px-4 py-2 text-xs text-gray-900">{brand.name}</td>
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-2">
-                                                    {can(user, 'Edit_Brands') && <Link
+                                                    {can(user, 'Modifier_Marques') && <Link
                                                         href={`/brands/${brand.id}/edit`}
                                                         className="text-blue-600 hover:text-blue-700 transition p-1 hover:bg-blue-50 rounded"
                                                     >
                                                         <PencilIcon className="h-4 w-4" />
                                                     </Link>}
-                                                    {can(user, 'Delete_Brands') &&
+                                                    {can(user, 'Supprimer_Marques') &&
                                                         <button
                                                             onClick={() => handleDelete(brand.id)}
                                                             className="text-red-600 hover:text-red-700 transition p-1 hover:bg-red-50 rounded"

@@ -75,17 +75,17 @@ class BatteryController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('created', $battery, ['new' => $battery->getAttributes()]);
+        $this->logAudit('ajouter', $battery, ['new' => $battery->getAttributes()]);
 
         if (!empty($validated['server_ids'])) {
             $battery->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $battery, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $battery, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('batteries', 'public');
             $battery->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $battery, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $battery, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('batteries.index');
@@ -127,7 +127,7 @@ class BatteryController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('updated', $battery, [
+        $this->logAudit('modifier ', $battery, [
             'old' => $oldAttributes,
             'new' => $battery->getChanges()
         ]);
@@ -139,11 +139,11 @@ class BatteryController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $battery, ['new' => $added]);
+                $this->logAudit('attacher_serveurs ', $battery, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $battery, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $battery, ['old' => $removed]);
             }
         }
 
@@ -158,7 +158,7 @@ class BatteryController extends Controller
             $path = $request->file('image')->store('batteries', 'public');
             $battery->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $battery, [
+            $this->logAudit('image_modifier', $battery, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -181,13 +181,13 @@ class BatteryController extends Controller
         if ($battery->image) {
             Storage::disk('public')->delete($battery->image->url);
             $battery->image()->delete();
-            $this->logAudit('image_deleted', $battery, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer ', $battery, ['old' => ['image' => $oldImage]]);
         }
 
         $battery->servers()->detach();
         $battery->delete();
 
-        $this->logAudit('deleted', $battery, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $battery, ['old' => $oldAttributes]);
 
         return redirect()->route('batteries.index');
     }

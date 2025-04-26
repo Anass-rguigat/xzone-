@@ -92,7 +92,7 @@ const Create: React.FC<Props> = ({ brands = [] }) => {
                         >
                             Annuler
                         </Link>
-                        {can(user, 'Edit_Brands') &&
+                        {can(user, 'Ajouter_Marques') &&
                         <button
                             type="submit"
                             disabled={processing}

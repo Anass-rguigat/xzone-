@@ -32,7 +32,7 @@ interface Props {
     graphicCards: Component[];
     fiberOpticCards: Component[];
     expansionCards: Component[];
-    cableConnectors?: Component[];
+    cable_connectors?: Component[];
     batteries?: Component[];
 }
 
@@ -50,7 +50,7 @@ export default function Create({
     graphicCards,
     fiberOpticCards,
     expansionCards,
-    cableConnectors = [],
+    cable_connectors = [],
     batteries = [],
 }: Props) {
     const { data, setData, post, progress, errors, processing } = useForm({
@@ -77,7 +77,7 @@ export default function Create({
         graphic_card_ids: [] as number[],
         fiber_optic_card_ids: [] as number[],
         expansion_card_ids: [] as number[],
-        cable_ids: [] as number[],
+        cable_connector_ids: [] as number[],
         battery_ids: [] as number[],
     });
 
@@ -223,7 +223,7 @@ export default function Create({
 
                             <div>
                                 <label className="block text-sm font-medium mb-1 text-gray-700">
-                                    Prix (€)
+                                    Prix (DH)
                                 </label>
                                 <input
                                     type="number"
@@ -285,9 +285,21 @@ export default function Create({
                         <div className="space-y-4">
                             {[
                                 { label: 'RAMs', id: 'ram_ids', options: rams },
-                                // ... (other components)
+                                { label: 'Disques durs', id: 'hard_drive_ids', options: hardDrives },
+                                { label: 'Processeurs', id: 'processor_ids', options: processors },
+                                { label: 'Alimentations', id: 'power_supply_ids', options: powerSupplies },
+                                { label: 'Cartes mères', id: 'motherboard_ids', options: motherboards },
+                                { label: 'Cartes réseau', id: 'network_card_ids', options: networkCards },
+                                { label: 'Contrôleurs RAID', id: 'raid_controller_ids', options: raidControllers },
+                                { label: 'Refroidissements', id: 'cooling_solution_ids', options: coolingSolutions },
+                                { label: 'Châssis', id: 'chassis_ids', options: chassis },
+                                { label: 'Cartes graphiques', id: 'graphic_card_ids', options: graphicCards },
+                                { label: 'Cartes fibre optique', id: 'fiber_optic_card_ids', options: fiberOpticCards },
+                                { label: 'Cartes d\'extension', id: 'expansion_card_ids', options: expansionCards },
+                                { label: 'Câbles', id: 'cable_connector_ids', options: cable_connectors },
+                                { label: 'Batteries', id: 'battery_ids', options: batteries },
                             ].map((component) => (
-                                component.options && component.options.length > 0 && (
+                                component.options  && (
                                     <div key={component.id}>
                                         <label className="block text-sm font-medium mb-1 text-gray-700">
                                             {component.label}
@@ -295,7 +307,11 @@ export default function Create({
                                         <select
                                             multiple
                                             className="w-full rounded-md border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            // ... (other props)
+                                            value={data[component.id as keyof typeof data] as number[]}
+                                            onChange={(e) => {
+                                                const options = Array.from(e.target.selectedOptions, option => Number(option.value));
+                                                setData(component.id as any, options);
+                                            }}
                                         >
                                             {component.options.map((option) => (
                                                 <option key={option.id} value={option.id}>
@@ -358,7 +374,7 @@ export default function Create({
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Add_Servers') && (
+                            {can(user, 'Ajouter_Serveurs') && (
                                 <button
                                     type="submit"
                                     disabled={processing}

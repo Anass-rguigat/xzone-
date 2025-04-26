@@ -75,17 +75,17 @@ class ChassisController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('created', $chassis, ['new' => $chassis->getAttributes()]);
+        $this->logAudit('ajouter', $chassis, ['new' => $chassis->getAttributes()]);
 
         if (!empty($validated['server_ids'])) {
             $chassis->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $chassis, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs ', $chassis, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('chassis', 'public');
             $chassis->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $chassis, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter ', $chassis, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('chassis.index');
@@ -129,7 +129,7 @@ class ChassisController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('updated', $chassis, [
+        $this->logAudit('modifier ', $chassis, [
             'old' => $oldAttributes,
             'new' => $chassis->getChanges()
         ]);
@@ -141,11 +141,11 @@ class ChassisController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $chassis, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $chassis, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $chassis, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $chassis, ['old' => $removed]);
             }
         }
 
@@ -160,7 +160,7 @@ class ChassisController extends Controller
             $path = $request->file('image')->store('chassis', 'public');
             $chassis->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $chassis, [
+            $this->logAudit('image_modifier', $chassis, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -185,13 +185,13 @@ class ChassisController extends Controller
         if ($chassis->image) {
             Storage::disk('public')->delete($chassis->image->url);
             $chassis->image()->delete();
-            $this->logAudit('image_deleted', $chassis, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $chassis, ['old' => ['image' => $oldImage]]);
         }
 
         $chassis->servers()->detach();
         $chassis->delete();
 
-        $this->logAudit('deleted', $chassis, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $chassis, ['old' => $oldAttributes]);
 
         return redirect()->route('chassis.index');
     }

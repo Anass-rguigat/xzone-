@@ -234,7 +234,7 @@ export default function Create() {
             >
               Annuler
             </Link>
-            {can(user, 'manage_users') && (
+            {can(user, 'Gerer_Utilisateurs') && (
               <button
                 type="submit"
                 disabled={processing}

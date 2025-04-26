@@ -181,7 +181,7 @@ class ServerController extends Controller
             'rack_mountable' => $validated['rack_mountable'],
             'form_factor' => $validated['form_factor'],
         ]);
-        $this->logAudit('created', $server, ['new' => $server->getAttributes()]);
+        $this->logAudit('ajouter', $server, ['new' => $server->getAttributes()]);
 
 
         $relationships = [
@@ -203,13 +203,13 @@ class ServerController extends Controller
         foreach ($relationships as $key => $relation) {
             if (!empty($validated[$key])) {
                 $server->$relation()->attach($validated[$key] ?? []);
-                $this->logAudit($relation . '_attached', $server, ['new' => $validated[$key]]);
+                $this->logAudit($relation . '_attacher', $server, ['new' => $validated[$key]]);
             }
         }
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('servers', 'public');
             $server->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $server, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $server, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('servers.index');
@@ -349,7 +349,7 @@ class ServerController extends Controller
 
         // Update server attributes
         $server->update($validated);
-        $this->logAudit('updated', $server, [
+        $this->logAudit('modifier', $server, [
             'old' => $oldAttributes,
             'new' => $server->getChanges()
         ]);
@@ -386,14 +386,14 @@ class ServerController extends Controller
 
             // Log attachments
             if (!empty($added)) {
-                $this->logAudit("{$relation}_attached", $server, [
+                $this->logAudit("{$relation}_attacher", $server, [
                     'new' => $added
                 ]);
             }
 
             // Log detachments
             if (!empty($removed)) {
-                $this->logAudit("{$relation}_detached", $server, [
+                $this->logAudit("{$relation}_détacher", $server, [
                     'old' => $removed
                 ]);
             }
@@ -410,7 +410,7 @@ class ServerController extends Controller
             $path = $request->file('image')->store('servers', 'public');
             $server->image()->create(['url' => $path]);
 
-            $this->logAudit('image_updated', $server, [
+            $this->logAudit('image_modifier', $server, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -456,7 +456,7 @@ class ServerController extends Controller
         if ($server->image) {
             Storage::disk('public')->delete($server->image->url);
             $server->image()->delete();
-            $this->logAudit('image_deleted', $server, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $server, ['old' => ['image' => $oldImage]]);
         }
 
         $server->rams()->detach();
@@ -475,7 +475,7 @@ class ServerController extends Controller
         $server->cable_connectors()->detach();
 
         $server->delete();
-        $this->logAudit('deleted', $server, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $server, ['old' => $oldAttributes]);
         return redirect()->route('servers.index');
     }
 }

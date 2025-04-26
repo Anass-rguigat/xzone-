@@ -265,7 +265,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('customers', CustomerController::class);
 
     // Users Management
-    Route::middleware(['auth', 'can:manage_users'])->group(function () {
+    Route::middleware(['auth', 'can:Gerer_Utilisateurs'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
@@ -279,14 +279,14 @@ Route::middleware('auth')->group(function () {
     // Authentication Logs 
     Route::get('/authenticationLogs', [AuthenticationLogController::class, 'index'])
         ->name('logs.authentication.index')
-        ->middleware('can:Affiche_Connexions_Audits');
+        ->middleware('can:Voir_Audits_Connexion');
 
 
     Route::get('/auditLogs', [AuditLogController::class, 'index'])
         ->name('logs.audit.index')
-        ->middleware('can:Affiche_logs_Audits');
+        ->middleware('can:Voir_Logs_Audit');
     
-    Route::get('/journaux-audit/{auditLog}', [AuditLogController::class, 'show'])->name('journaux-audit.voir')->middleware('can:Affiche_logs_Audits');
+    Route::get('/journaux-audit/{auditLog}', [AuditLogController::class, 'show'])->name('journaux-audit.voir')->middleware('can:Voir_Logs_Audit');
     
 });
 

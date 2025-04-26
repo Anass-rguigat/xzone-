@@ -178,7 +178,7 @@ export default function Edit({ supplier }: Props) {
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Edit_Suppliers') && (
+                            {can(user, 'Modifier_Fournisseurs') && (
                                 <button
                                     type="submit"
                                     disabled={processing}

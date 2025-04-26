@@ -77,17 +77,17 @@ class ExpansionCardController extends Controller
             'price' => $validated['price'],
         ]);
 
-        $this->logAudit('created', $expansionCard, ['new' => $expansionCard->getAttributes()]);
+        $this->logAudit('ajouter', $expansionCard, ['new' => $expansionCard->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $expansionCard->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $expansionCard, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $expansionCard, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('expansion_cards', 'public');
             $expansionCard->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $expansionCard, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $expansionCard, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('expansion-cards.index');
@@ -133,7 +133,7 @@ class ExpansionCardController extends Controller
             'price' => $validated['price'] ?? $expansionCard->price,
         ]);
 
-        $this->logAudit('updated', $expansionCard, [
+        $this->logAudit('modifier', $expansionCard, [
             'old' => $oldAttributes,
             'new' => $expansionCard->getChanges()
         ]);
@@ -145,11 +145,11 @@ class ExpansionCardController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $expansionCard, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $expansionCard, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $expansionCard, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $expansionCard, ['old' => $removed]);
             }
         }
 
@@ -164,7 +164,7 @@ class ExpansionCardController extends Controller
             $path = $request->file('image')->store('expansion_cards', 'public');
             $expansionCard->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $expansionCard, [
+            $this->logAudit('image_modifier', $expansionCard, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -189,13 +189,13 @@ class ExpansionCardController extends Controller
         if ($expansionCard->image) {
             Storage::disk('public')->delete($expansionCard->image->url);
             $expansionCard->image()->delete();
-            $this->logAudit('image_deleted', $expansionCard, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $expansionCard, ['old' => ['image' => $oldImage]]);
         }
 
         $expansionCard->servers()->detach();
         $expansionCard->delete();
 
-        $this->logAudit('deleted', $expansionCard, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $expansionCard, ['old' => $oldAttributes]);
 
         return redirect()->route('expansion-cards.index');
     }

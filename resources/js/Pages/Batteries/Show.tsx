@@ -38,8 +38,8 @@ export default function Show({ battery }: Props) {
         <Layout
         >
             <h2 className="text-3xl font-semibold leading-tight text-gray-800 dark:text-gray-200 p-2">
-                    Détails de la Batterie
-                </h2>
+                Détails de la Batterie
+            </h2>
             <section className="py-8 bg-white md:py-16 dark:bg-gray-900 antialiased">
                 <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
                     <div className="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
@@ -71,37 +71,31 @@ export default function Show({ battery }: Props) {
                             </div>
                             <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
                             <div className="mt-6 sm:gap-4 sm:items-start sm:flex sm:mt-8 flex-col space-y-4">
-    <div>
-        <strong>Capacité:</strong> {battery.capacity} mAh
-    </div>
-    <div>
-        <strong>Type:</strong> {battery.type}
-    </div>
-    <div>
-        <strong>Marque:</strong> {battery.brand.name}
-    </div>
+                                <div>
+                                    <strong>Capacité:</strong> {battery.capacity} mAh
+                                </div>
+                                <div>
+                                    <strong>Type:</strong> {battery.type}
+                                </div>
+                                <div>
+                                    <strong>Marque:</strong> {battery.brand.name}
+                                </div>
 
-    {battery.servers.length > 0 && (
-        <div className="mt-4">
-            <strong>Serveurs Associés:</strong>
-            <ul className="ml-4 list-disc">
-                {battery.servers.map((server) => (
-                    <li key={server.id}>{server.name}</li>
-                ))}
-            </ul>
-        </div>
-    )}
-</div>
-<hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
+                                {battery.servers.length > 0 && (
+                                    <div className="mt-4">
+                                        <strong>Serveurs Associés:</strong>
+                                        <ul className="ml-4 list-disc">
+                                            {battery.servers.map((server) => (
+                                                <li key={server.id}>{server.name}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                            <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 
                             <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-                                <Link
-                                    href={`/batteries/${battery.id}/edit`}
-                                    className="text-green-900 hover:text-white border border-green-800 hover:bg-green-900 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:border-green-600 dark:text-green-400 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800"
-                                    role="button"
-                                >
-                                    Modifier
-                                </Link>
+                                
 
                                 <Link
                                     href="/batteries"
@@ -114,7 +108,7 @@ export default function Show({ battery }: Props) {
 
                             <hr className="my-6 md:my-8 border-gray-200 dark:border-gray-800" />
 
-                            
+
                         </div>
                     </div>
                 </div>

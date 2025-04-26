@@ -89,7 +89,7 @@ class StockMovementController extends Controller
 
         try {
         $movement = StockMovement::create($validated);
-        $this->logAudit('created', $movement, ['new' => $movement->getAttributes()]);
+        $this->logAudit('ajouter', $movement, ['new' => $movement->getAttributes()]);
 
         $stockLevel = StockLevel::where('component_id', $validated['component_id'])
             ->where('component_type', $validated['component_type'])
@@ -208,7 +208,7 @@ class StockMovementController extends Controller
             }
 
             $stockMovement->update($validated);
-            $this->logAudit('updated', $stockMovement, [
+            $this->logAudit('modifier', $stockMovement, [
                 'old' => $oldAttributes,
                 'new' => $stockMovement->getChanges()
             ]);
@@ -268,7 +268,7 @@ class StockMovementController extends Controller
 
             // Suppression du mouvement
             $stockMovement->delete();
-            $this->logAudit('deleted', $stockMovement, ['old' => $oldAttributes]);
+            $this->logAudit('supprimer', $stockMovement, ['old' => $oldAttributes]);
 
             DB::commit();
             return redirect()->route('stock-movements.index')->with('success', 'Mouvement supprimé avec succès');

@@ -77,17 +77,17 @@ class HardDriveController extends Controller
             'stock' => $validated['stock'],
         ]);
 
-        $this->logAudit('created', $hardDrive, ['new' => $hardDrive->getAttributes()]);
+        $this->logAudit('ajouter', $hardDrive, ['new' => $hardDrive->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $hardDrive->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $hardDrive, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $hardDrive, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('hard_drives', 'public');
             $hardDrive->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $hardDrive, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $hardDrive, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('hard-drives.index');
@@ -133,7 +133,7 @@ class HardDriveController extends Controller
             'stock' => $validated['stock'] ?? $hardDrive->stock,
         ]);
 
-        $this->logAudit('updated', $hardDrive, [
+        $this->logAudit('modifier', $hardDrive, [
             'old' => $oldAttributes,
             'new' => $hardDrive->getChanges()
         ]);
@@ -145,11 +145,11 @@ class HardDriveController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $hardDrive, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $hardDrive, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $hardDrive, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $hardDrive, ['old' => $removed]);
             }
         }
 
@@ -164,7 +164,7 @@ class HardDriveController extends Controller
             $path = $request->file('image')->store('hard_drives', 'public');
             $hardDrive->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $hardDrive, [
+            $this->logAudit('image_modifier', $hardDrive, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -195,7 +195,7 @@ class HardDriveController extends Controller
         $hardDrive->servers()->detach();
         $hardDrive->delete();
 
-        $this->logAudit('deleted', $hardDrive, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $hardDrive, ['old' => $oldAttributes]);
 
         return redirect()->route('hard-drives.index');
     }

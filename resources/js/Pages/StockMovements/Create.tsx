@@ -226,7 +226,7 @@ export default function Create({ suppliers, componentTypes }: Props) {
                         >
                             Annuler
                         </Link>
-                        {can(user, 'Add_Stock_Mouvements') && (
+                        {can(user, 'Ajouter_Mouvements_Stock') && (
                             <button
                                 type="submit"
                                 disabled={processing}

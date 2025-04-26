@@ -109,7 +109,7 @@ export default function Index({ discounts }: Props) {
                 />
                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
               </div>
-              {can(user, 'Add_Discounts_Composants') && (
+              {can(user, 'Ajouter_Remises_Composants') && (
                 <Link
                   href={route('discountComponents.create')}
                   className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
@@ -149,7 +149,7 @@ export default function Index({ discounts }: Props) {
                         </div>
                       </th>
                     ))}
-                    {(can(user, 'Edit_Discounts_Servers') || can(user, 'Delete_Discounts_Servers')) && (
+                    {(can(user, 'Modifier_Remises_Composants') || can(user, 'Supprimer_Remises_Composants')) && (
                       <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                     )}
                   </tr>
@@ -166,7 +166,7 @@ export default function Index({ discounts }: Props) {
                       <td className="px-4 py-2 text-sm text-gray-600">{formatDate(discount.end_date)}</td>
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
-                          {can(user, 'Edit_Discounts_Composants') && (
+                          {can(user, 'Modifier_Remises_Composants') && (
                             <Link
                               href={route('discountComponents.edit', discount.id)}
                               className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
@@ -174,7 +174,7 @@ export default function Index({ discounts }: Props) {
                               <PencilIcon className="h-4 w-4" />
                             </Link>
                           )}
-                          {can(user, 'Delete_Discounts_Composants') && (
+                          {can(user, 'Supprimer_Remises_Composants') && (
                             <button
                               onClick={() => handleDelete(discount.id)}
                               className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"

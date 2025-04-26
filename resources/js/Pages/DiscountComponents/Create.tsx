@@ -235,7 +235,7 @@ export default function Create({ ...componentGroups }: Props) {
               >
                 Annuler
               </Link>
-              {can(user, 'Add_Discounts_Composants') && (
+              {can(user, 'Ajouter_Remises_Composants') && (
                 <button
                   type="submit"
                   disabled={processing}

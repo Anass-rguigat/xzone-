@@ -75,17 +75,17 @@ class NetworkCardController extends Controller
             'speed' => $validated['speed'],
         ]);
 
-        $this->logAudit('created', $networkCard, ['new' => $networkCard->getAttributes()]);
+        $this->logAudit('ajouter', $networkCard, ['new' => $networkCard->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $networkCard->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $networkCard, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $networkCard, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('network_cards', 'public');
             $networkCard->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $networkCard, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $networkCard, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('network-cards.index');

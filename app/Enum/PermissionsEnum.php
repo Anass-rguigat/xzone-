@@ -4,61 +4,68 @@ namespace App\Enum;
 
 enum PermissionsEnum: string
 {
-    case AddBrands = 'Add_Brands';
-    case ListBrands = 'List_Brands';
-    case DeleteBrands = 'Delete_Brands';
-    case EditBrands = 'Edit_Brands';
-    case ShowBrands = 'Show_Brands';
+    // Marques
+    case AddBrands = 'Ajouter_Marques';
+    case ListBrands = 'Lister_Marques';
+    case DeleteBrands = 'Supprimer_Marques';
+    case EditBrands = 'Modifier_Marques';
+    case ShowBrands = 'Voir_Marques';
 
-    case ListDashboard = 'List_Dashboard';
+    // Tableau de bord
+    case ListDashboard = 'Lister_Tableau_de_bord';
 
-    case AddServers = 'Add_Servers';
-    case ListServers = 'List_Servers';
-    case DeleteServers = 'Delete_Servers';
-    case EditServers = 'Edit_Servers';
-    case ShowServers = 'Show_Servers';
+    // Serveurs
+    case AddServers = 'Ajouter_Serveurs';
+    case ListServers = 'Lister_Serveurs';
+    case DeleteServers = 'Supprimer_Serveurs';
+    case EditServers = 'Modifier_Serveurs';
+    case ShowServers = 'Voir_Serveurs';
 
+    // Composants
+    case AddComposants = 'Ajouter_Composants';
+    case ListComposants = 'Lister_Composants';
+    case DeleteComposants = 'Supprimer_Composants';
+    case EditComposants = 'Modifier_Composants';
+    case ShowComposants = 'Voir_Composants';
 
-    case AddComposants = 'Add_Composants';
-    case ListComposants = 'List_Composants';
-    case DeleteComposants = 'Delete_Composants';
-    case EditComposants = 'Edit_Composants';
-    case ShowComposants = 'Show_Composants';
+    // Remises sur serveurs
+    case AddDiscounts_Servers = 'Ajouter_Remises_Serveurs';
+    case ListDiscounts_Servers = 'Lister_Remises_Serveurs';
+    case DeleteDiscounts_Servers = 'Supprimer_Remises_Serveurs';
+    case EditDiscounts_Servers = 'Modifier_Remises_Serveurs';
+    case ShowDiscounts_Servers = 'Voir_Remises_Serveurs';
 
-    case AddDiscounts_Servers = 'Add_Discounts_Servers';
-    case ListDiscounts_Servers = 'List_Discounts_Servers';
-    case DeleteDiscounts_Servers = 'Delete_Discounts_Servers';
-    case EditDiscounts_Servers = 'Edit_Discounts_Servers';
-    case ShowDiscounts_Servers = 'Show_Discounts_Servers';
+    // Remises sur composants
+    case AddDiscounts_Composants = 'Ajouter_Remises_Composants';
+    case ListDiscounts_Composants = 'Lister_Remises_Composants';
+    case DeleteDiscounts_Composants = 'Supprimer_Remises_Composants';
+    case EditDiscounts_Composants = 'Modifier_Remises_Composants';
+    case ShowDiscounts_Composants = 'Voir_Remises_Composants';
 
+    // Fournisseurs
+    case AddSuppliers = 'Ajouter_Fournisseurs';
+    case ListSuppliers = 'Lister_Fournisseurs';
+    case DeleteSuppliers = 'Supprimer_Fournisseurs';
+    case EditSuppliers = 'Modifier_Fournisseurs';
+    case ShowSuppliers = 'Voir_Fournisseurs';
 
-    case AddDiscounts_Composants = 'Add_Discounts_Composants';
-    case ListDiscounts_Composants = 'List_Discounts_Composants';
-    case DeleteDiscounts_Composants = 'Delete_Discounts_Composants';
-    case EditDiscounts_Composants = 'Edit_Discounts_Composants';
-    case ShowDiscounts_Composants = 'Show_Discounts_Composants';
+    // Mouvements de stock
+    case AddStock_Mouvements = 'Ajouter_Mouvements_Stock';
+    case ListStock_Mouvements = 'Lister_Mouvements_Stock';
+    case DeleteStock_Mouvements = 'Supprimer_Mouvements_Stock';
+    case EditStock_Mouvements = 'Modifier_Mouvements_Stock';
+    case ShowStock_Mouvements = 'Voir_Mouvements_Stock';
 
-    case AddSuppliers = 'Add_Suppliers';
-    case ListSuppliers = 'List_Suppliers';
-    case DeleteSuppliers = 'Delete_Suppliers';
-    case EditSuppliers = 'Edit_Suppliers';
-    case ShowSuppliers = 'Show_Suppliers';
+    // Niveaux de stock
+    case ListStock_Levels = 'Lister_Niveaux_Stock';
+    case ShowStock_Levels = 'Voir_Niveaux_Stock';
 
+    // Audits
+    case Affiche_Connexions_Audits = 'Voir_Audits_Connexion';
+    case Affiche_logs_Audits = 'Voir_Logs_Audit';
 
-    case AddStock_Mouvements = 'Add_Stock_Mouvements';
-    case ListStock_Mouvements = 'List_Stock_Mouvements';
-    case DeleteStock_Mouvements = 'Delete_Stock_Mouvements';
-    case EditStock_Mouvements = 'Edit_Stock_Mouvements';
-    case ShowStock_Mouvements = 'Show_Stock_Mouvements';
-
-    case ListStock_Levels = 'List_Stock_Levels';
-    case ShowStock_Levels = 'Show_Stock_Levels';
-
-    case Affiche_Connexions_Audits = 'Affiche_Connexions_Audits';
-
-    case Affiche_logs_Audits = 'Affiche_logs_Audits';
-
-    case ManageUsers = 'manage_users';
+    // Utilisateurs
+    case ManageUsers = 'Gerer_Utilisateurs';
 
     public static function values(): array
     {

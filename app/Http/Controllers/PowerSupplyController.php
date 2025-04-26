@@ -77,17 +77,17 @@ class PowerSupplyController extends Controller
             'modular' => $validated['modular'],
         ]);
 
-        $this->logAudit('created', $powerSupply, ['new' => $powerSupply->getAttributes()]);
+        $this->logAudit('ajouter', $powerSupply, ['new' => $powerSupply->getAttributes()]);
 
         if (isset($validated['server_ids']) && count($validated['server_ids']) > 0) {
             $powerSupply->servers()->attach($validated['server_ids']);
-            $this->logAudit('servers_attached', $powerSupply, ['new' => $validated['server_ids']]);
+            $this->logAudit('attacher_serveurs', $powerSupply, ['new' => $validated['server_ids']]);
         }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('power_supplies', 'public');
             $powerSupply->image()->create(['url' => $path]);
-            $this->logAudit('image_uploaded', $powerSupply, ['new' => ['image' => $path]]);
+            $this->logAudit('image_ajouter', $powerSupply, ['new' => ['image' => $path]]);
         }
 
         return redirect()->route('power-supplies.index');
@@ -133,7 +133,7 @@ class PowerSupplyController extends Controller
             'modular' => $validated['modular'] ?? $powerSupply->modular,
         ]);
 
-        $this->logAudit('updated', $powerSupply, [
+        $this->logAudit('modifier', $powerSupply, [
             'old' => $oldAttributes,
             'new' => $powerSupply->getChanges()
         ]);
@@ -145,11 +145,11 @@ class PowerSupplyController extends Controller
             $removed = array_diff($oldServers, $validated['server_ids']);
 
             if (!empty($added)) {
-                $this->logAudit('servers_attached', $powerSupply, ['new' => $added]);
+                $this->logAudit('attacher_serveurs', $powerSupply, ['new' => $added]);
             }
 
             if (!empty($removed)) {
-                $this->logAudit('servers_detached', $powerSupply, ['old' => $removed]);
+                $this->logAudit('détacher_serveurs', $powerSupply, ['old' => $removed]);
             }
         }
 
@@ -164,7 +164,7 @@ class PowerSupplyController extends Controller
             $path = $request->file('image')->store('power_supplies', 'public');
             $powerSupply->image()->create(['url' => $path]);
             
-            $this->logAudit('image_updated', $powerSupply, [
+            $this->logAudit('image_modifier', $powerSupply, [
                 'old' => ['image' => $oldImage],
                 'new' => ['image' => $path]
             ]);
@@ -189,13 +189,13 @@ class PowerSupplyController extends Controller
         if ($powerSupply->image) {
             Storage::disk('public')->delete($powerSupply->image->url);
             $powerSupply->image()->delete();
-            $this->logAudit('image_deleted', $powerSupply, ['old' => ['image' => $oldImage]]);
+            $this->logAudit('image_supprimer', $powerSupply, ['old' => ['image' => $oldImage]]);
         }
 
         $powerSupply->servers()->detach();
         $powerSupply->delete();
 
-        $this->logAudit('deleted', $powerSupply, ['old' => $oldAttributes]);
+        $this->logAudit('supprimer', $powerSupply, ['old' => $oldAttributes]);
 
         return redirect()->route('power-supplies.index');
     }

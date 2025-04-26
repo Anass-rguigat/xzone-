@@ -160,14 +160,6 @@ export default function Show({ processor }: Props) {
                             >
                                 Retour à la liste
                             </Link>
-                            {can(user, 'Edit_Composants') && (
-                                <Link
-                                    href={`/processors/${processor.id}/edit`}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
-                                >
-                                    Modifier le processeur
-                                </Link>
-                            )}
                         </div>
                     </div>
                 </div>

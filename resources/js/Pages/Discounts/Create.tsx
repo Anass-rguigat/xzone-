@@ -173,7 +173,7 @@ export default function CreateDiscount({ servers, errors: initialErrors }: Props
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Add_Discounts_Servers') && (
+                            {can(user, 'Ajouter_Remises_Serveurs') && (
                                 <button
                                     type="submit"
                                     disabled={processing}

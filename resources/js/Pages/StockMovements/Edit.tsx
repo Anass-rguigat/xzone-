@@ -235,7 +235,7 @@ export default function Edit({ movement, suppliers, componentTypes, components, 
                             >
                                 Annuler
                             </Link>
-                            {can(user, 'Edit_Stock_Mouvements') && (
+                            {can(user, 'Modifier_Mouvements_Stock') && (
                                 <button
                                     type="submit"
                                     disabled={processing}

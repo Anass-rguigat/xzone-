@@ -106,7 +106,7 @@ export default function Index({ customers }: Props) {
                                 />
                                 <SearchIcon className="h-4 w-4 absolute right-2 top-2.5 text-gray-400" />
                             </div>
-                            {can(user, 'manage_users') && (
+                            {can(user, 'Gerer_Utilisateurs') && (
                                 <Link
                                     href="/customers/create"
                                     className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 
@@ -147,7 +147,7 @@ export default function Index({ customers }: Props) {
                                                 </div>
                                             </th>
                                         ))}
-                                        {(can(user, 'Delete_Customers') || can(user, 'Edit_Customers')) && (
+                                        {(can(user, 'Gerer_Utilisateurs') ) && (
                                             <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Actions</th>
                                         )}
                                     </tr>
@@ -173,7 +173,7 @@ export default function Index({ customers }: Props) {
                                             </td>
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-2">
-                                                    {can(user, 'manage_users') && (
+                                                    {can(user, 'Gerer_Utilisateurs') && (
                                                         <Link
                                                             href={`/customers/${customer.id}/edit`}
                                                             className="text-blue-600 hover:text-blue-700 transition-colors p-1 hover:bg-blue-50 rounded"
@@ -181,7 +181,7 @@ export default function Index({ customers }: Props) {
                                                             <PencilIcon className="h-4 w-4" />
                                                         </Link>
                                                     )}
-                                                    {can(user, 'manage_users') && (
+                                                    {can(user, 'Gerer_Utilisateurs') && (
                                                         <button
                                                             onClick={() => handleDelete(customer.id)}
                                                             className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
@@ -189,7 +189,7 @@ export default function Index({ customers }: Props) {
                                                             <TrashIcon className="h-4 w-4" />
                                                         </button>
                                                     )}
-                                                    {can(user, 'manage_users') && (
+                                                    {can(user, 'Gerer_Utilisateurs') && (
                                                     <Link
                                                         href={`/customers/${customer.id}`}
                                                         className="text-green-600 hover:text-green-700 transition-colors p-1 hover:bg-green-50 rounded"
